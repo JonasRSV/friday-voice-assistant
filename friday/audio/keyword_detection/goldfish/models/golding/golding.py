@@ -68,7 +68,7 @@ def raw_audio_model(signal: tf.Tensor, num_labels: int) -> tf.Tensor:
                                    kernel_size=7,
                                    strides=2,
                                    activation=tf.nn.relu)(x)
-    x = tf.compat.v1.layers.MaxPooling1D(pool_size=7, strides=5)(x)
+    x = tf.compat.v1.layers.MaxPooling1D(pool_size=7, strides=3)(x)
     x = tf.compat.v1.layers.Conv1D(filters=64,
                                    kernel_size=5,
                                    strides=2,
@@ -83,9 +83,8 @@ def raw_audio_model(signal: tf.Tensor, num_labels: int) -> tf.Tensor:
                                    kernel_size=3,
                                    activation=tf.nn.relu)(x)
     x = tf.compat.v1.layers.MaxPooling1D(pool_size=3, strides=2)(x)
-    print("X\n\n\n\n\n\n\n", x)
     x = tf.compat.v1.layers.Flatten()(x)
-    print("X\n\n\n\n\n\n\n", x)
+    x = tf.compat.v1.layers.Dense(256, activation=tf.nn.relu)(x)
     x = tf.compat.v1.layers.Dense(num_labels, activation=None)(x)
 
     return x
