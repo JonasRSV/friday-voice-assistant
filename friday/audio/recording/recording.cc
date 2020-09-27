@@ -103,7 +103,7 @@ void setup(nlohmann::json config) {
                    snd_strerror(error_code));
   }
 
-  pcm = (int16_t *)malloc(alsa_frame_length * sizeof(int16_t));
+  pcm = (int16_t *)calloc(alsa_frame_length, sizeof(int16_t));
 
   if (!pcm) {
     log_error_exit("recording", "failed to allocate memory for audio buffer",
@@ -120,7 +120,6 @@ void free_recording_device() {
 }
 
 int16_t *get_next_audio_frame(void) {
-  std::cout << "Alsa frame size in record audio is " << alsa_frame_length << std::endl;
   int count = snd_pcm_readi(alsa_handle, pcm, alsa_frame_length);
   if (count < 0) {
     log_error_exit("read audio", "'snd_pcm_readi' failed with",

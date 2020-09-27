@@ -90,6 +90,22 @@ def raw_audio_model(signal: tf.Tensor, num_labels: int) -> tf.Tensor:
     return x
 
 
+def mfcc_model(x: tf.Tensor, num_labels: int, mode: tf.estimator.ModeKeys) -> tf.Tensor:
+    x = tf.expand_dims(x, -1)
+    x = tf.compat.v1.layers.Conv2D(filters=64, kernel_size=(7, 3), activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 3), strides=(1, 1))(x)
+    x = tf.compat.v1.layers.Conv2D(filters=128, kernel_size=(1, 7), activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 4), strides=(1, 1))(x)
+    x = tf.compat.v1.layers.Conv2D(filters=256, kernel_size=(1, 10), padding="valid", activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Conv2D(filters=512, kernel_size=(7, 1), activation=tf.nn.relu)(x)
+    x = tf.keras.layers.GlobalMaxPooling2D()(x)
+
+    x = tf.compat.v1.layers.Dropout(rate=0.25)(x, training=mode == tf.estimator.ModeKeys.TRAIN)
+    x = tf.compat.v1.layers.Dense(256, activation=tf.nn.relu)(x)
+    logits = tf.compat.v1.layers.Dense(256, activation=None)(x)
+    return logits
+
+
 def make_model_fn(summary_output_dir: str,
                   num_labels: int,
                   sample_rate: int = 44100,
@@ -109,8 +125,19 @@ def make_model_fn(summary_output_dir: str,
                              tensor=signal,
                              sample_rate=sample_rate)
 
-        logits = raw_audio_model(signal=signal, num_labels=num_labels)
+        signal = audio.mfcc_feature(
+            signal=signal,
+            coefficients=120,
+            sample_rate=sample_rate,
+            frame_length=160,
+            frame_step=40,
+            num_mel_bins=120,
+            upper_edge_hertz=4000
+        )
 
+        # logits = raw_audio_model(signal=signal, num_labels=num_labels)
+
+        logits = mfcc_model(x=signal, num_labels=num_labels, mode=mode)
         predict_op = tf.argmax(logits, axis=1)
 
         loss_op, train_op, train_logging_hooks, eval_metric_ops = None, None, None, None
@@ -118,11 +145,11 @@ def make_model_fn(summary_output_dir: str,
             labels = features["label"]
             loss_op = tf.identity(tf.losses.sparse_softmax_cross_entropy(
                 labels=labels, logits=logits),
-                                  name="loss_op")
+                name="loss_op")
             train_op = tf.compat.v1.train.AdamOptimizer(
                 learning_rate=0.001).minimize(
-                    loss=loss_op,
-                    global_step=tf.compat.v1.train.get_global_step())
+                loss=loss_op,
+                global_step=tf.compat.v1.train.get_global_step())
 
             train_logging_hooks = [
                 tf.estimator.LoggingTensorHook({"loss": "loss_op"},
@@ -217,8 +244,8 @@ def main():
         num_labels=args.num_labels,
         sample_rate=args.sample_rate,
         save_summaries_every=args.save_summary_every),
-                                       model_dir=args.model_directory,
-                                       config=config)
+        model_dir=args.model_directory,
+        config=config)
 
     if args.mode == Mode.train_eval.value:
         train_spec = tf.estimator.TrainSpec(
@@ -247,9 +274,9 @@ def main():
         def serving_input_receiver_fn():
             inputs = {
                 "audio":
-                tf.compat.v1.placeholder(dtype=tf.int16,
-                                         shape=[AUDIO_SHAPE],
-                                         name="input")
+                    tf.compat.v1.placeholder(dtype=tf.int16,
+                                             shape=[AUDIO_SHAPE],
+                                             name="input")
             }
             return tf.estimator.export.ServingInputReceiver(
                 features=inputs, receiver_tensors=inputs)

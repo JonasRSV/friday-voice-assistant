@@ -1,5 +1,6 @@
 #include "audio/keyword_detection/goldfish/goldfish.hpp"
 #include "audio/recording/recording.hpp"
+#include "audio/replay_buffer/replay_buffer.hpp"
 #include "setup/friday_options.hpp"
 #include "shared/aixlog.hpp"
 #include <signal.h>
@@ -30,19 +31,35 @@ int main(int argc, const char *argv[]) {
 
   goldfish::setup(get_config(opt, goldfish::config()));
   recording::setup(get_config(opt, recording::config()));
+  replay_buffer::setup(get_config(opt, replay_buffer::config()));
 
   size_t frame_size = recording::frame_size();
-  std::cout << "Frame Size " << frame_size << std::endl;
+
+  // Read a few frames because the first ones seems to be buggy
+  for (int i = 0; i < 2; i++) 
+    recording::get_next_audio_frame();
+
   while (run) {
     int16_t *pcm = recording::get_next_audio_frame();
+    replay_buffer::add(pcm, frame_size);
 
-    goldfish::model_prediction pred = goldfish::predict(pcm, frame_size);
+    int16_t *predict_frame = replay_buffer::next_sample();
 
-    LOG(INFO) << TAG("main") << AixLog::Color::GREEN
-              << "Predicted: " << pred.index << AixLog::Color::NONE
-              << std::endl;
+    if (predict_frame != nullptr) {
+      goldfish::model_prediction pred =
+          goldfish::predict(predict_frame, frame_size);
+
+      LOG(INFO) << TAG("main") << AixLog::Color::GREEN
+                << "Predicted: " << pred.index << AixLog::Color::NONE
+                << std::endl;
+    } else {
+      LOG(DEBUG) << TAG("main") << AixLog::Color::CYAN
+                 << "No audio to predict on" << AixLog::Color::NONE
+                 << std::endl;
+    }
   }
 
+  replay_buffer::clear();
   recording::free_recording_device();
   launch::free_options(opt);
 
