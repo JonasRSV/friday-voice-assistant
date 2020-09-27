@@ -127,13 +127,17 @@ def make_model_fn(summary_output_dir: str,
 
         signal = audio.mfcc_feature(
             signal=signal,
-            coefficients=120,
+            coefficients=40,
             sample_rate=sample_rate,
-            frame_length=160,
-            frame_step=40,
-            num_mel_bins=120,
-            upper_edge_hertz=4000
+            frame_length=1024,
+            frame_step=512,
+            fft_length=1024,
+            num_mel_bins=40,
+            lower_edge_hertz=128,
+            upper_edge_hertz=3800
         )
+
+        #print("Signal", signal)
 
         # logits = raw_audio_model(signal=signal, num_labels=num_labels)
 
@@ -235,7 +239,7 @@ def main():
     config = tf.estimator.RunConfig(
         model_dir=args.model_directory,
         save_summary_steps=args.save_summary_every,
-        log_step_count_steps=100,
+        log_step_count_steps=5,
         save_checkpoints_steps=args.eval_every,
     )
 
