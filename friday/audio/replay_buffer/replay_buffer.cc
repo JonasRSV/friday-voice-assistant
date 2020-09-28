@@ -1,6 +1,7 @@
 #include "../../shared/aixlog.hpp"
+#include "../recording/recording.hpp"
 #include "replay_buffer.hpp"
-#include "time.h"
+#include <thread>
 
 namespace replay_buffer {
 std::string config() { return "replay_buffer"; }
@@ -20,11 +21,15 @@ size_t fr_fw_pt;
 size_t au_bk_pt;
 size_t au_fw_pt;
 
+size_t model_frame_size;
 size_t audio_frame_size;
+
 size_t max_predict_delay;
 size_t predict_jump;
 
 double energy_barrier;
+
+std::thread *recording_thread;
 
 template <typename T>
 T get_required_config(nlohmann::json config, std::string name) {
@@ -158,31 +163,54 @@ double find_next_frame() {
   fr_bk_pt = best_bk_ptr;
   fr_fw_pt = best_fw_ptr;
 
-  return sqrt((double)best_energy / (double)audio_frame_size);
+  return sqrt((double)best_energy / (double)model_frame_size);
+}
+
+void listen() {
+  // Read a few frames because the first audio seems to be garbled
+  size_t frame_size = recording::frame_size();
+  LOG(INFO) << TAG("replay_buffer") << AixLog::Color::GREEN
+            << "Starting audio recording -- frame_size: " << frame_size
+            << AixLog::Color::NONE << std::endl;
+  for (int i = 0; i < 2; i++)
+    recording::get_next_audio_frame();
+
+  while (true) {
+    int16_t *pcm = recording::get_next_audio_frame();
+    replay_buffer::add(pcm, frame_size);
+  }
 }
 } // namespace
 
 void setup(nlohmann::json config) {
   buffer_size = get_required_config<size_t>(config, "buffer_size");
-  audio_frame_size = get_required_config<size_t>(config, "frame_size");
+
+  // Frame size model will get
+  model_frame_size = get_required_config<size_t>(config, "frame_size");
+
+  // Frame size recorded by alsa
+  audio_frame_size = recording::frame_size();
 
   // The maximum distance allowed between the fr_bk_pt and au_fw_pt
   max_predict_delay = get_required_config<size_t>(config, "max_predict_delay");
-  predict_jump = get_optional_config<size_t>(config, "predict_jump", 500);
+  predict_jump = get_optional_config<size_t>(config, "predict_jump", 0);
   energy_barrier = get_optional_config<double>(config, "energy_barrier", 500.0);
 
   fr_bk_pt = 0;
-  fr_fw_pt = audio_frame_size;
+  fr_fw_pt = model_frame_size;
 
   au_bk_pt = 0;
   au_fw_pt = audio_frame_size;
 
   buffer = (int16_t *)calloc(buffer_size, sizeof(int16_t));
-  return_buffer = (int16_t *)calloc(audio_frame_size, sizeof(int16_t));
+  return_buffer = (int16_t *)calloc(model_frame_size, sizeof(int16_t));
+
+  // Start new thread for recording audio
+  recording_thread = new std::thread(listen);
 }
 void purge() {
   fr_bk_pt = 0;
-  fr_fw_pt = audio_frame_size;
+  fr_fw_pt = model_frame_size;
 
   au_bk_pt = 0;
   au_fw_pt = audio_frame_size;
@@ -197,12 +225,19 @@ void add(int16_t *audio, size_t size) {
 
   move_ptr_distance(&au_bk_pt, size);
   move_ptr_distance(&au_fw_pt, size);
-
 }
 
 void clear() {
   if (buffer) {
     delete[] buffer;
+  }
+
+  if (return_buffer) {
+    delete[] return_buffer;
+  }
+
+  if (recording_thread) {
+    delete recording_thread;
   }
 }
 
@@ -234,6 +269,6 @@ int16_t *next_sample() {
 
   return nullptr;
 }
-size_t frame_size() { return 0; }
+size_t frame_size() { return model_frame_size; }
 
 } // namespace replay_buffer

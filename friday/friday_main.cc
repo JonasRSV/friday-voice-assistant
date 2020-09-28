@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#define SECONDS(x) (long long)(x * 1000000)
+
 static volatile bool run = true;
 
 void interrupt_handler(int _) {
@@ -33,16 +35,12 @@ int main(int argc, const char *argv[]) {
   recording::setup(get_config(opt, recording::config()));
   replay_buffer::setup(get_config(opt, replay_buffer::config()));
 
-  size_t frame_size = recording::frame_size();
+  size_t frame_size = replay_buffer::frame_size();
 
-  // Read a few frames because the first ones seems to be buggy
-  for (int i = 0; i < 2; i++) 
-    recording::get_next_audio_frame();
+  // to let replay_buffer recording get started
+  usleep(SECONDS(2));
 
   while (run) {
-    int16_t *pcm = recording::get_next_audio_frame();
-    replay_buffer::add(pcm, frame_size);
-
     int16_t *predict_frame = replay_buffer::next_sample();
 
     if (predict_frame != nullptr) {
@@ -50,13 +48,15 @@ int main(int argc, const char *argv[]) {
           goldfish::predict(predict_frame, frame_size);
 
       LOG(INFO) << TAG("main") << AixLog::Color::GREEN
-                << "Predicted: " << pred.index << AixLog::Color::NONE
+                << "Predicted: " << pred.probabilities[0] << AixLog::Color::NONE
                 << std::endl;
     } else {
       LOG(DEBUG) << TAG("main") << AixLog::Color::CYAN
                  << "No audio to predict on" << AixLog::Color::NONE
                  << std::endl;
     }
+
+    usleep(SECONDS(1.0));
   }
 
   replay_buffer::clear();

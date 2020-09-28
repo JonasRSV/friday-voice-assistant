@@ -102,7 +102,7 @@ def mfcc_model(x: tf.Tensor, num_labels: int, mode: tf.estimator.ModeKeys) -> tf
 
     x = tf.compat.v1.layers.Dropout(rate=0.25)(x, training=mode == tf.estimator.ModeKeys.TRAIN)
     x = tf.compat.v1.layers.Dense(256, activation=tf.nn.relu)(x)
-    logits = tf.compat.v1.layers.Dense(256, activation=None)(x)
+    logits = tf.compat.v1.layers.Dense(num_labels, activation=None)(x)
     return logits
 
 
@@ -137,12 +137,10 @@ def make_model_fn(summary_output_dir: str,
             upper_edge_hertz=3800
         )
 
-        #print("Signal", signal)
-
         # logits = raw_audio_model(signal=signal, num_labels=num_labels)
 
         logits = mfcc_model(x=signal, num_labels=num_labels, mode=mode)
-        predict_op = tf.argmax(logits, axis=1)
+        predict_op = tf.nn.softmax(logits)
 
         loss_op, train_op, train_logging_hooks, eval_metric_ops = None, None, None, None
         if mode != tf.estimator.ModeKeys.PREDICT:
@@ -164,11 +162,13 @@ def make_model_fn(summary_output_dir: str,
                     summary_op=tf.compat.v1.summary.merge_all())
             ]
 
+            predicted_class = tf.argmax(predict_op, axis=-1)
+
             eval_metric_ops = {
-                "accuracy": tf.metrics.accuracy(labels, predict_op)
+                "accuracy": tf.metrics.accuracy(labels, predicted_class)
             }
 
-        # Squeeze prediction to scalar again
+        # Squeeze prediction to vector again
         if mode == tf.estimator.ModeKeys.PREDICT:
             predict_op = tf.squeeze(predict_op, name="output")
 

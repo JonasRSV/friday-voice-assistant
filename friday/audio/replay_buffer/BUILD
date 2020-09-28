@@ -4,12 +4,14 @@ cc_library(
     srcs = ["replay_buffer.cc"],
     hdrs = ["replay_buffer.hpp"],
     deps = [
+        "//friday/audio/recording:recording_library",
         "//friday/shared:logging",
         "//friday/shared:json",
     ],
     visibility = [
         "//friday:__pkg__",
     ],
+    linkopts =["-pthread"]
 )
 
 cc_test(

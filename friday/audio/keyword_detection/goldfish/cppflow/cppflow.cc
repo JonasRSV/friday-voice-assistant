@@ -87,7 +87,7 @@ template <typename T> void Tensor::set_data(T *data, size_t size) {
   this->flag = 1;
 }
 
-template <typename T> T Tensor::get_data() {
+template <typename T> std::vector<T> Tensor::get_data() {
 
   // Check Tensor is valid
   this->error_check(this->flag != -1, "Tensor is not valid");
@@ -105,7 +105,8 @@ template <typename T> T Tensor::get_data() {
 
   // Convert to correct type
   const auto T_data = static_cast<T *>(raw_data);
-  return *T_data;
+
+  return std::vector<T>(T_data, T_data + this->dims[0]);
 }
 
 template <typename T> TF_DataType Tensor::deduce_type() {
@@ -149,11 +150,7 @@ template TF_DataType Tensor::deduce_type<uint32_t>();
 template TF_DataType Tensor::deduce_type<uint64_t>();
 
 // VALID get_data TEMPLATES
-template float Tensor::get_data<float>();
-template double Tensor::get_data<double>();
-template int16_t Tensor::get_data<int16_t>();
-template int32_t Tensor::get_data<int32_t>();
-template int64_t Tensor::get_data<int64_t>();
+template std::vector<float> Tensor::get_data<float>();
 
 // VALID set_data TEMPLATES
 template void Tensor::set_data<int16_t>(int16_t *new_data, size_t size);

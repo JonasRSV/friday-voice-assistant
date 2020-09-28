@@ -21,7 +21,7 @@ public:
   ~Tensor();
 
   template <typename T> void set_data(T *data, size_t size);
-  template <typename T> T get_data();
+  template <typename T> std::vector<T> get_data();
 
   int flag;
   void clean();

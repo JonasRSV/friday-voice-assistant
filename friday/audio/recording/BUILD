@@ -10,5 +10,6 @@ cc_library(
     linkopts = ["-lasound"],
     visibility = [
         "//friday:__pkg__",
+        "//friday/audio/replay_buffer:__pkg__",
     ],
 )

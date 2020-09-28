@@ -1,11 +1,11 @@
 #include "../../../shared/json.hpp"
 #include <string>
+#include <vector>
 
 namespace goldfish {
 
 struct model_prediction {
-  int64_t index;
-  std::string predicted_string;
+  std::vector<float> probabilities;
 };
 
 std::string config();
