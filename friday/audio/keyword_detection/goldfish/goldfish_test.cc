@@ -26,10 +26,10 @@ TEST_CASE("Make prediction", "Goldfish") {
       "friday/audio/keyword_detection/goldfish/models/saved_models/test_model";
   goldfish::setup(config);
 
-  int16_t *audio = get_mock_audio(8000);
+  int16_t *audio = get_mock_audio(16000);
 
   goldfish::model_prediction pred = goldfish::predict(/*audio=*/audio,
-                                                      /*size=*/8000);
+                                                      /*size=*/16000);
 
   //REQUIRE(pred.index == 9);
 }

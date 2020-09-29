@@ -170,9 +170,13 @@ def make_model_fn(summary_output_dir: str,
         loss_op, train_op, train_logging_hooks, eval_metric_ops = None, None, None, None
         if mode != tf.estimator.ModeKeys.PREDICT:
             labels = features["label"]
+
+            weights = tf.gather(params=[0.1, 5.0, 5.0], indices=labels)
+
             loss_op = tf.identity(tf.losses.sparse_softmax_cross_entropy(
-                labels=labels, logits=logits),
+                labels=labels, logits=logits, weights=weights),
                 name="loss_op")
+
             train_op = tf.compat.v1.train.AdamOptimizer(
                 learning_rate=0.001).minimize(
                 loss=loss_op,
@@ -223,13 +227,11 @@ def main():
         "--train_prefix",
         help="absolute path to prefix of train files",
         type=str,
-        required=True
     )
     parser.add_argument(
         "--eval_prefix",
         help="absolute path to prefix of eval files",
         type=str,
-        required=True
     )
     parser.add_argument("--num_labels",
                         required=True,
