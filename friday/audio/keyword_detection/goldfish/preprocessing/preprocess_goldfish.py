@@ -100,6 +100,7 @@ def exec_job(job: (int, List[str])):
     padding = get_audio_padding(MAXIMUM_CLIP_LENGTH)
     labler = get_labler()
 
+    dropped_audio_files = 0
     while job:
         load_in_memory = job[:IN_MEMORY_FILES]
 
@@ -110,6 +111,7 @@ def exec_job(job: (int, List[str])):
 
             # If clip is too long drop it
             if not length_filter(example):
+                dropped_audio_files += 1
                 continue
 
             # Pads all clips to same length
@@ -136,6 +138,8 @@ def exec_job(job: (int, List[str])):
             process_local_index += 1
 
         job = job[IN_MEMORY_FILES:]
+
+        logger.info(f"Dropped audio files {dropped_audio_files}")
 
 
 if __name__ == '__main__':
