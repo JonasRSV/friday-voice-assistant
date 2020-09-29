@@ -30,6 +30,14 @@ py_binary(name="preprocess_goldfish",
           python_version="PY3",
 )
 
+py_binary(name="train_valid_split",
+          srcs=["train_valid_split.py"],
+          deps=[
+              requirement("tensorflow"),
+          ],
+          python_version="PY3",
+)
+
 cc_binary(
           name="data_pipeline",
           srcs=[

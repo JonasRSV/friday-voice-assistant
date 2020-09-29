@@ -15,7 +15,7 @@ class Mode(Enum):
 
 
 def create_input_fn(mode: tf.estimator.ModeKeys,
-                    goldfish_directory: str,
+                    input_prefix: str,
                     parallel_reads: int = 5,
                     batch_size: int = 32):
     feature_description = {
@@ -31,10 +31,11 @@ def create_input_fn(mode: tf.estimator.ModeKeys,
         return x
 
     def input_fn():
-        files = [
-            str(x)
-            for x in pathlib.Path(goldfish_directory).glob("ptfexample*")
-        ]
+        entries = input_prefix.split("/")
+        path = "/".join(entries[:-1])
+        prefix = entries[-1]
+
+        files = [str(file) for file in pathlib.Path(path).glob(f"{prefix}")]
 
         dataset = tf.data.TFRecordDataset(filenames=files,
                                           num_parallel_reads=parallel_reads)
@@ -219,9 +220,16 @@ def main():
         required=True,
         help="Model directory -- where events & checkpoints is stored")
     parser.add_argument(
-        "--goldfish_directory",
-        help=
-        "Base path of dataset. If none is provided GOLDFISH_DIRECTORY will be used"
+        "--train_prefix",
+        help="absolute path to prefix of train files",
+        type=str,
+        required=True
+    )
+    parser.add_argument(
+        "--eval_prefix",
+        help="absolute path to prefix of eval files",
+        type=str,
+        required=True
     )
     parser.add_argument("--num_labels",
                         required=True,
@@ -279,7 +287,7 @@ def main():
         train_spec = tf.estimator.TrainSpec(
             input_fn=create_input_fn(
                 mode=tf.estimator.ModeKeys.TRAIN,
-                goldfish_directory=args.goldfish_directory,
+                input_prefix=args.train_prefix,
                 parallel_reads=args.parallel_reads,
                 batch_size=args.batch_size),
             max_steps=args.max_steps,
@@ -289,7 +297,7 @@ def main():
             steps=args.eval_every,
             input_fn=create_input_fn(
                 mode=tf.estimator.ModeKeys.EVAL,
-                goldfish_directory=args.goldfish_directory,
+                input_prefix=args.eval_prefix,
                 parallel_reads=args.parallel_reads,
                 batch_size=args.batch_size),
             throttle_secs=30,

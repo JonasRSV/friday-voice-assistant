@@ -13,7 +13,8 @@ Then for training launch
 
 ```bash
 bazel run //friday/audio/keyword_detection/goldfish/models/golding:golding --\
-    --goldfish_directory=$GOLDFISH_DIRECTORY\
+    "--train_prefix=$GOLDFISH_DIRECTORY/ptfexamples.train*"\
+    "--eval_prefix=$GOLDFISH_DIRECTORY/ptfexamples.valid*"\
     --model_directory=$MODEL_OUTPUT\
     --mode="train_eval"\
     --sample_rate=8000\

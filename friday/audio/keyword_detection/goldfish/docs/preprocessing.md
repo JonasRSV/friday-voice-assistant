@@ -106,4 +106,14 @@ bazel run //friday/audio/keyword_detection/goldfish/preprocessing:preprocess_gol
   --in_memory_files=20
 ```
 
+#### Splitting
 
+The train_valid_split pipeline creates one train and one validation split.
+
+```bash
+bazel run //friday/audio/keyword_detection/goldfish/preprocessing:train_valid_split --\
+ "--source_prefix=${GOLDFISH_DIRECTORY?}/ptfexamples*"\
+ --sink_prefix=${GOLDFISH_DIRECTORY?}/ptfexamples\
+ --examples_per_shard=100\
+ --train_fraction=0.8
+```

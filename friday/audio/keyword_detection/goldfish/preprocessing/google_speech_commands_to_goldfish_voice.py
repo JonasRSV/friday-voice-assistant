@@ -138,7 +138,10 @@ def main(base_path: pathlib.Path):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+
     parser = argparse.ArgumentParser()
+
     parser.add_argument("--base_path",
                         type=str,
                         help="Path to tsv file containing file clip IDs",
