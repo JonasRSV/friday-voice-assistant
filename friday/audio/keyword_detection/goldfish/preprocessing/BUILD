@@ -30,3 +30,15 @@ py_binary(name="preprocess_goldfish",
           python_version="PY3",
 )
 
+cc_binary(
+          name="data_pipeline",
+          srcs=[
+            "data_pipeline.cc",
+          ],
+	  deps=[
+            "@parallel_cpp//src:map_reduce",
+          ],
+          copts = [
+            "-std=c++2a",
+          ],
+)
