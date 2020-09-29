@@ -1,4 +1,5 @@
 #include "../../shared/aixlog.hpp"
+#include "../../shared/config.hpp"
 #include "../recording/recording.hpp"
 #include "replay_buffer.hpp"
 #include <thread>
@@ -30,30 +31,6 @@ size_t predict_jump;
 double energy_barrier;
 
 std::thread *recording_thread;
-
-template <typename T>
-T get_required_config(nlohmann::json config, std::string name) {
-  if (config.contains(name)) {
-    return (T)config[name];
-  }
-
-  LOG(FATAL) << TAG("replay_buffer") << AixLog::Color::RED << "Required field"
-             << name << "not in config" << AixLog::Color::NONE << std::endl;
-  exit(1);
-}
-
-template <typename T>
-T get_optional_config(nlohmann::json config, std::string name, T default_) {
-  if (config.contains(name)) {
-    return (T)config[name];
-  }
-
-  LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::RED << "Optional field "
-             << name << " not in config, using default: " << default_
-             << AixLog::Color::NONE << std::endl;
-
-  return default_;
-}
 
 void move_ptr_distance(size_t *ptr, size_t distance) {
   *ptr = (*ptr + distance) % buffer_size;
@@ -169,10 +146,16 @@ double find_next_frame() {
 void listen() {
   // Read a few frames because the first audio seems to be garbled
   size_t frame_size = recording::frame_size();
+  size_t sample_rate = recording::sample_rate();
   LOG(INFO) << TAG("replay_buffer") << AixLog::Color::GREEN
             << "Starting audio recording -- frame_size: " << frame_size
+            << " -- sample_rate: " << sample_rate 
             << AixLog::Color::NONE << std::endl;
-  for (int i = 0; i < 2; i++)
+
+  // We forget some frames because audio in the beginning of recording is sometimes
+  // garbled, for some reason.
+  int frames_to_forget = 1 + (int)(sample_rate * 2 / frame_size);
+  for (int i = 0; i < frames_to_forget; i++)
     recording::get_next_audio_frame();
 
   while (true) {
@@ -183,18 +166,23 @@ void listen() {
 } // namespace
 
 void setup(nlohmann::json config) {
-  buffer_size = get_required_config<size_t>(config, "buffer_size");
+  buffer_size = config::get_required_config<size_t>(config, "buffer_size",
+                                                    /*tag=*/"replay_buffer");
 
   // Frame size model will get
-  model_frame_size = get_required_config<size_t>(config, "frame_size");
+  model_frame_size = config::get_required_config<size_t>(
+      config, "frame_size", /*tag=*/"replay_buffer");
 
   // Frame size recorded by alsa
   audio_frame_size = recording::frame_size();
 
   // The maximum distance allowed between the fr_bk_pt and au_fw_pt
-  max_predict_delay = get_required_config<size_t>(config, "max_predict_delay");
-  predict_jump = get_optional_config<size_t>(config, "predict_jump", 0);
-  energy_barrier = get_optional_config<double>(config, "energy_barrier", 500.0);
+  max_predict_delay = config::get_required_config<size_t>(
+      config, "max_predict_delay", /*tag=*/"replay_buffer");
+  predict_jump = config::get_optional_config<size_t>(
+      config, "predict_jump", /*tag=*/"replay_buffer", /*default=*/0);
+  energy_barrier = config::get_optional_config<double>(
+      config, "energy_barrier", /*tag=*/"replay_buffer", /*default=*/500.0);
 
   fr_bk_pt = 0;
   fr_fw_pt = model_frame_size;

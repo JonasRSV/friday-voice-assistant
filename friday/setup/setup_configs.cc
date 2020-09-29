@@ -1,4 +1,5 @@
 #include "../shared/aixlog.hpp"
+#include "../shared/config.hpp"
 #include "dirent.h"
 #include "setup_configs.hpp"
 
@@ -16,20 +17,6 @@ std::string get_full_path(std::string config_directory, std::string file_name) {
   return config_directory + "/" + file_name;
 }
 
-nlohmann::json load_json(std::string json_path) {
-  std::ifstream i(json_path);
-  if (!i.good()) {
-    LOG(FATAL) << TAG("launch") << AixLog::Color::RED << "Failed to load "
-               << json_path << AixLog::Color::NONE << std::endl;
-    exit(1);
-  }
-  nlohmann::json config;
-
-  // Reads json file
-  i >> config;
-
-  return config;
-}
 } // namespace
 
 std::map<std::string, nlohmann::json>
@@ -62,7 +49,7 @@ load_configs(std::string config_directory) {
       LOG(DEBUG) << AixLog::Tag("launch") << "Loading " << AixLog::Color::GREEN
                  << full_path << AixLog::Color::NONE << std::endl;
 
-      configs[config_name] = load_json(full_path);
+      configs[config_name] = config::load_json(full_path, "launch");
     } else {
       LOG(DEBUG) << AixLog::Tag("launch") << "Ignoring " << AixLog::Color::RED
                  << filename << AixLog::Color::NONE << std::endl;

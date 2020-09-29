@@ -1,4 +1,5 @@
 #include "../../shared/aixlog.hpp"
+#include "../../shared/config.hpp"
 #include "../../shared/json.hpp"
 #include "recording.hpp"
 #include <alsa/asoundlib.h>
@@ -12,6 +13,7 @@ std::string config() { return "recording"; }
 snd_pcm_t *alsa_handle;
 int16_t *pcm;
 int32_t alsa_frame_length = 0;
+size_t alsa_sample_rate;
 
 namespace {
 void log_error_exit(std::string tag, std::string description,
@@ -21,26 +23,17 @@ void log_error_exit(std::string tag, std::string description,
   exit(1);
 }
 
-template <typename T>
-T get_required_config(nlohmann::json config, std::string name) {
-  if (config.contains(name)) {
-    return (T)config[name];
-  }
-
-  LOG(FATAL) << TAG("recording") << AixLog::Color::RED << "Required field"
-             << name << "not in config" << AixLog::Color::NONE << std::endl;
-  exit(1);
-}
-
 } // namespace
 
 void setup(nlohmann::json config) {
 
-  alsa_frame_length = get_required_config<int>(config, "frame_length");
+  alsa_frame_length = config::get_required_config<int>(config, "frame_length",
+                                                       /*tag=*/"recording");
 
-  std::string input_audio_device =
-      get_required_config<std::string>(config, "device");
-  int sample_rate = get_required_config<int>(config, "sample_rate");
+  std::string input_audio_device = config::get_required_config<std::string>(
+      config, "device", /*tag=*/"recording");
+  alsa_sample_rate = config::get_required_config<int>(config, "sample_rate",
+                                                      /*tag=*/"recording");
 
   int error_code = snd_pcm_open(&alsa_handle, input_audio_device.c_str(),
                                 SND_PCM_STREAM_CAPTURE, 0);
@@ -76,8 +69,8 @@ void setup(nlohmann::json config) {
                    snd_strerror(error_code));
   }
 
-  error_code =
-      snd_pcm_hw_params_set_rate(alsa_handle, hardware_params, sample_rate, 0);
+  error_code = snd_pcm_hw_params_set_rate(alsa_handle, hardware_params,
+                                          alsa_sample_rate, 0);
   if (error_code != 0) {
     log_error_exit("recording", "'snd_pcm_hw_params_set_rate' failed with",
                    snd_strerror(error_code));
@@ -134,4 +127,5 @@ int16_t *get_next_audio_frame(void) {
 }
 
 size_t frame_size() { return alsa_frame_length; }
+size_t sample_rate() { return alsa_sample_rate; }
 } // namespace recording

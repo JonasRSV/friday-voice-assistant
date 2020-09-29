@@ -13,7 +13,7 @@ struct options {
 
 options *parse_options(int argc, const char *argv[]);
 
-void free_options(options *opts);
+void free_options();
 } // namespace launch
 
 #endif /* end of include guard: FRIDAY_OPTIONS_HPP_ACUJUPZW */

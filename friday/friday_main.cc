@@ -1,4 +1,5 @@
 #include "audio/keyword_detection/goldfish/goldfish.hpp"
+#include "audio/keyword_detection/keyword_detection.hpp"
 #include "audio/recording/recording.hpp"
 #include "audio/replay_buffer/replay_buffer.hpp"
 #include "setup/friday_options.hpp"
@@ -9,11 +10,20 @@
 
 #define SECONDS(x) (long long)(x * 1000000)
 
+void clean() {
+  keyword_detection::clear();
+  replay_buffer::clear();
+  recording::free_recording_device();
+  launch::free_options();
+}
+
 static volatile bool run = true;
 
 void interrupt_handler(int _) {
   (void)_;
-  run = false;
+
+  clean();
+  exit(0);
 }
 
 nlohmann::json get_config(launch::options *opt, std::string name) {
@@ -34,34 +44,20 @@ int main(int argc, const char *argv[]) {
   goldfish::setup(get_config(opt, goldfish::config()));
   recording::setup(get_config(opt, recording::config()));
   replay_buffer::setup(get_config(opt, replay_buffer::config()));
-
-  size_t frame_size = replay_buffer::frame_size();
+  keyword_detection::setup(get_config(opt, keyword_detection::config()));
 
   // to let replay_buffer recording get started
   usleep(SECONDS(2));
 
-  while (run) {
-    int16_t *predict_frame = replay_buffer::next_sample();
+  while (true) {
+    std::string prediction = keyword_detection::prediction();
 
-    if (predict_frame != nullptr) {
-      goldfish::model_prediction pred =
-          goldfish::predict(predict_frame, frame_size);
-
-      LOG(INFO) << TAG("main") << AixLog::Color::GREEN
-                << "Predicted: " << pred.probabilities[0] << AixLog::Color::NONE
-                << std::endl;
-    } else {
-      LOG(DEBUG) << TAG("main") << AixLog::Color::CYAN
-                 << "No audio to predict on" << AixLog::Color::NONE
-                 << std::endl;
-    }
+    LOG(INFO) << TAG("main") << AixLog::Color::GREEN
+              << "Predicted: " << prediction << AixLog::Color::NONE
+              << std::endl;
 
     usleep(SECONDS(1.0));
   }
-
-  replay_buffer::clear();
-  recording::free_recording_device();
-  launch::free_options(opt);
 
   return 0;
 }

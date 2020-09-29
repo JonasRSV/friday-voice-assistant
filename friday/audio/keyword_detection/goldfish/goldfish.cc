@@ -52,4 +52,6 @@ model_prediction predict(int16_t *audio, size_t size) {
   return model_prediction{output->get_data<float>()};
 }
 
+size_t prediction_dim() { return output->dims[0]; }
+
 } // namespace goldfish

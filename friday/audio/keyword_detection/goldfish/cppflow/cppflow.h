@@ -28,10 +28,10 @@ public:
   TF_Output op;
   TF_Tensor *val;
 
-private:
-  TF_DataType type;
   int n_dims;
   int64_t *dims;
+private:
+  TF_DataType type;
   void *data;
 
   template <typename T> TF_DataType deduce_type();

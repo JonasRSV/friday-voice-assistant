@@ -43,7 +43,7 @@ options *parse_options(int argc, const char *argv[]) {
   return opt;
 }
 
-void free_options(options *opt) {
+void free_options() {
   // TODO(jonasrsv)
   // Don't really need to free them since the OS does it.. on most systems
   // anyway But always nice to clean up after yourself.

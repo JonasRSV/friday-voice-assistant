@@ -15,11 +15,10 @@ cc_library(
     ],
 )
 
-
 cc_library(
-    name = "config_loader",
-    srcs = ["config_loader.cc"],
-    hdrs = ["config_loader.hpp"],
+    name = "config_library",
+    srcs = ["config.cc"],
+    hdrs = ["config.hpp"],
     deps = [
         "//friday/shared:json",
         "//friday/shared:logging",

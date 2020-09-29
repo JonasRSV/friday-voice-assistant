@@ -7,9 +7,11 @@ cc_library(
         "//friday/audio/recording:recording_library",
         "//friday/shared:logging",
         "//friday/shared:json",
+        "//friday/shared:config_library",
     ],
     visibility = [
         "//friday:__pkg__",
+        "//friday/audio/keyword_detection:__pkg__",
     ],
     linkopts =["-pthread"]
 )
