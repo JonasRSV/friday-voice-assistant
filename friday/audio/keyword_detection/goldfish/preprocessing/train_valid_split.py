@@ -76,6 +76,8 @@ def run_split(source_prefix: str, sink_prefix: str, examples_per_shard: int, tra
     train_file_writer.close()
     valid_file_writer.close()
 
+    logger.info(f"train_examples: {total_train} -- valid_examples: {total_valid}")
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
