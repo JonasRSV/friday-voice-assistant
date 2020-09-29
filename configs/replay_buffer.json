@@ -1,6 +1,6 @@
 {
     "buffer_size": 80000,
     "frame_size": 8000,
-    "max_predict_delay": 16000,
-    "energy_barrier": 1200
+    "max_predict_delay": 4000,
+    "energy_barrier": 1000
 }

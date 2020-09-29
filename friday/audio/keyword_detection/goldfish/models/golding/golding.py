@@ -263,7 +263,7 @@ def main():
     config = tf.estimator.RunConfig(
         model_dir=args.model_directory,
         save_summary_steps=args.save_summary_every,
-        log_step_count_steps=5,
+        log_step_count_steps=10,
         save_checkpoints_steps=args.eval_every,
     )
 

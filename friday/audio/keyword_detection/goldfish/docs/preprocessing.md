@@ -94,6 +94,10 @@ bazel run //friday/audio/keyword_detection/goldfish/preprocessing:google_speech_
 The pipeline 'preprocess_goldfish.py' prepares the dataset for training, it adds labels amongst other things.
 
 ```bash
+LABEL_MAP_PATH=${PWD}/friday/audio/keyword_detection/goldfish/configs/google_speech_commands_label_map.json
+LABEL_MAP_PATH=${PWD}/friday/audio/keyword_detection/goldfish/configs/google_speech_commands_few_label_map.json
+
+
 bazel run //friday/audio/keyword_detection/goldfish/preprocessing:preprocess_goldfish --\
  "--source_prefix=${GOLDFISH_DIRECTORY?}/tfexamples*"\
   --output_path=${GOLDFISH_DIRECTORY?}/ptfexamples\

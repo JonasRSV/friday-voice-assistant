@@ -22,7 +22,7 @@ bazel run //friday/audio/keyword_detection/goldfish/models/golding:golding --\
     --num_labels=36\
     --max_steps=1000000\
     --save_summary_every=500\
-    --eval_every=100\
+    --eval_every=500\
     --parallel_reads=5
     
 ```

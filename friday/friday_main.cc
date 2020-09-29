@@ -56,7 +56,7 @@ int main(int argc, const char *argv[]) {
               << "Predicted: " << prediction << AixLog::Color::NONE
               << std::endl;
 
-    usleep(SECONDS(1.0));
+    usleep(SECONDS(2.0));
   }
 
   return 0;

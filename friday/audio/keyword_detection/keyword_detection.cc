@@ -99,6 +99,7 @@ void setup(nlohmann::json config) {
 }
 
 std::string prediction() {
+  reset_buffer();
 
   size_t frame_size = replay_buffer::frame_size();
 
@@ -171,11 +172,18 @@ std::string prediction() {
       // If we are certain enough we make a prediction
       if (max(probability_buffer) / num_accum_predictions > certainty_barrier)
         return index_to_name[std::to_string(most_likely)];
+      else
+        LOG(INFO) << TAG("keyword_detection") << AixLog::Color::CYAN
+                  << "best guess was "
+                  << index_to_name[std::to_string(most_likely)]
+                  << " certainty: " << certainty << AixLog::Color::NONE
+                  << std::endl;
 
       LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
                  << "resetting buffer" << AixLog::Color::NONE << std::endl;
 
       // Otherwise we reset the buffer and start over
+      num_accum_predictions = 0.0;
       buffer_active_flag = false;
       reset_buffer();
     }
