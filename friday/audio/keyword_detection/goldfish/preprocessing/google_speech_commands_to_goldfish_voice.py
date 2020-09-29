@@ -91,7 +91,8 @@ def get_jobs(base_path: pathlib.Path,
 
             id += 1
 
-    logger.info(f"Total number of audio files: {id - 1}")
+    # Not using logger here because the sox library is cluttering the info logging, need to mute that somehow
+    print(f"Total number of audio files: {id - 1}")
 
     return jobs
 
@@ -140,8 +141,6 @@ def main(base_path: pathlib.Path):
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(LOGGER_NAME)
 
     parser = argparse.ArgumentParser()
 
