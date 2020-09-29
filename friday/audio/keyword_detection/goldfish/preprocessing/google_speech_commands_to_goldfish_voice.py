@@ -134,8 +134,10 @@ def main(base_path: pathlib.Path):
     jobs = get_jobs(base_path, SUB_PATHS)
     logging.info(f"Running {len(jobs)} jobs")
 
-    with mp.Pool(np.maximum(mp.cpu_count() - 2, 1)) as pool:
-        list(tqdm(pool.imap_unordered(worker, jobs, 1)))
+    with tqdm(total=len(jobs)) as progress_bar:
+        with mp.Pool(np.maximum(mp.cpu_count() - 2, 1)) as pool:
+            for _ in pool.imap_unordered(worker, jobs, 1):
+                progress_bar.update()
 
     logging.info("Done")
 
