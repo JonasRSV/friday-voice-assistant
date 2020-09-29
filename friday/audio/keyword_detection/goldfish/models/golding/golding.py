@@ -2,7 +2,6 @@ import pathlib
 import tensorflow as tf
 import friday.audio.keyword_detection.goldfish.models.shared.audio as audio
 import argparse
-import sys
 from enum import Enum
 
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
@@ -60,6 +59,7 @@ def raw_audio_model(signal: tf.Tensor, num_labels: int) -> tf.Tensor:
 
     Args:
         signal: Audio signal scaled to [-1, 1]
+        num_labels: The number of logits the model is expected to return
     Returns:
         Logits
     """
@@ -104,6 +104,30 @@ def mfcc_model(x: tf.Tensor, num_labels: int, mode: tf.estimator.ModeKeys) -> tf
     x = tf.compat.v1.layers.Dense(256, activation=tf.nn.relu)(x)
     logits = tf.compat.v1.layers.Dense(num_labels, activation=None)(x)
     return logits
+
+
+def get_metric_ops(labels: tf.Tensor, predicted_class: tf.Tensor, num_labels: int):
+    metric_ops = {}
+
+    def weights_label(label: int):
+        return tf.cast(tf.equal(labels, label), tf.float32)
+
+    for label in range(num_labels):
+        metric_ops[f"{label}_accuracy"] = tf.metrics.accuracy(labels=labels,
+                                                              predictions=predicted_class,
+                                                              weights=weights_label(label))
+        bools_label = tf.equal(labels, label)
+        bools_pred = tf.equal(predicted_class, label)
+
+        metric_ops[f"{label}_recall"] = tf.metrics.recall(labels=bools_label,
+                                                          predictions=bools_pred,
+                                                          weights=weights_label(label))
+        metric_ops[f"{label}_precision"] = tf.metrics.precision(labels=bools_label,
+                                                                predictions=bools_pred,
+                                                                weights=weights_label(label))
+
+    metric_ops["global_accuracy"] = tf.metrics.accuracy(labels=labels, predictions=predicted_class)
+    return metric_ops
 
 
 def make_model_fn(summary_output_dir: str,
@@ -164,9 +188,9 @@ def make_model_fn(summary_output_dir: str,
 
             predicted_class = tf.argmax(predict_op, axis=-1)
 
-            eval_metric_ops = {
-                "accuracy": tf.metrics.accuracy(labels, predicted_class)
-            }
+            eval_metric_ops = get_metric_ops(labels=labels,
+                                             predicted_class=predicted_class,
+                                             num_labels=num_labels)
 
         # Squeeze prediction to vector again
         if mode == tf.estimator.ModeKeys.PREDICT:
