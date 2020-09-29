@@ -18,9 +18,9 @@ bazel run //friday/audio/keyword_detection/goldfish/models/golding:golding --\
     --model_directory=$MODEL_OUTPUT\
     --mode="train_eval"\
     --sample_rate=8000\
-    --clip_length=1.0\
+    --clip_length=2.0\
     --batch_size=32\
-    --num_labels=36\
+    --num_labels=3\
     --max_steps=1000000\
     --save_summary_every=500\
     --eval_every=500\
@@ -34,7 +34,7 @@ bazel run //friday/audio/keyword_detection/goldfish/models/golding:golding --\
     --model_directory=$MODEL_OUTPUT\
     --mode="export"\
     --sample_rate=8000\
-    --clip_length=1.0\
-    --num_labels=36
+    --clip_length=2.0\
+    --num_labels=3
     
 ```

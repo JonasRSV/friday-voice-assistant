@@ -17,8 +17,6 @@ def run_split(source_prefix: str, sink_prefix: str, examples_per_shard: int, tra
 
     files = list(pathlib.Path(path).glob(f"{prefix}"))
 
-    print("Files", files)
-
     train_index = 0
     valid_index = 0
 

@@ -101,8 +101,8 @@ LABEL_MAP_PATH=${PWD}/friday/audio/keyword_detection/goldfish/configs/google_spe
 bazel run //friday/audio/keyword_detection/goldfish/preprocessing:preprocess_goldfish --\
  "--source_prefix=${GOLDFISH_DIRECTORY?}/tfexamples*"\
   --output_path=${GOLDFISH_DIRECTORY?}/ptfexamples\
-  --label_map_path=${PWD}/friday/audio/keyword_detection/goldfish/configs/google_speech_commands_label_map.json\
-  --maximum_clip_length=1\
+  --label_map_path=${LABEL_MAP_PATH?}\
+  --maximum_clip_length=2\
   --in_memory_files=20
 ```
 
