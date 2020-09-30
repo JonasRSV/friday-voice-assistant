@@ -29,7 +29,7 @@ def get_length_filter(length: int) -> Callable[[tf.train.Example], bool]:
         sample_rate = utils.get_sample_rate(example)
         audio = utils.get_audio(example)
 
-        return (len(audio) / sample_rate) < length
+        return (len(audio) / sample_rate) <= length
 
     return f
 

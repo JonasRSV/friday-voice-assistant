@@ -56,11 +56,13 @@ def get_jobs(tsv_df: pd.DataFrame,
              files_per_job: int = 1000):
     clips_path = str(clips_path)
 
+    files = 0
     id = 0
     jobs, audio_files, sentences = [], [], []
     for index, (file_name, sentence) in tqdm(
             enumerate(zip(tsv_df["path"], tsv_df["sentence"]), 1)):
 
+        files += 1
         audio_files.append(f"{clips_path}/{file_name}")
         sentences.append(sentence)
 
@@ -73,7 +75,7 @@ def get_jobs(tsv_df: pd.DataFrame,
             audio_files, sentences = [], []
             id += 1
 
-    print("Total number of audio files", id - 1)
+    print("Total number of audio files", files)
 
     return jobs
 

@@ -142,6 +142,7 @@ The pipeline 'preprocess_goldfish.py' prepares the dataset for training, it adds
 ```bash
 LABEL_MAP_PATH=${PWD}/friday/audio/keyword_detection/goldfish/configs/google_speech_commands_label_map.json
 LABEL_MAP_PATH=${PWD}/friday/audio/keyword_detection/goldfish/configs/google_speech_commands_few_label_map.json
+LABEL_MAP_PATH=${PWD}/friday/audio/keyword_detection/goldfish/configs/tänd_släck.json
 
 
 bazel run //friday/audio/keyword_detection/goldfish/preprocessing:preprocess_goldfish --\
