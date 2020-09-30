@@ -1,3 +1,9 @@
+# THIS IS A WORK IN PROGRESS 
+
+The following content is incomplete and outdated
+
+---
+
 # Friday voice assistant 
 
 simple keyword assistant (WIP)

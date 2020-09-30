@@ -171,10 +171,10 @@ def make_model_fn(summary_output_dir: str,
         if mode != tf.estimator.ModeKeys.PREDICT:
             labels = features["label"]
 
-            weights = tf.gather(params=[0.1, 5.0, 5.0], indices=labels)
+            #weights = tf.gather(params=[0.1, 5.0, 5.0], indices=labels)
 
             loss_op = tf.identity(tf.losses.sparse_softmax_cross_entropy(
-                labels=labels, logits=logits, weights=weights),
+                labels=labels, logits=logits),
                 name="loss_op")
 
             train_op = tf.compat.v1.train.AdamOptimizer(
