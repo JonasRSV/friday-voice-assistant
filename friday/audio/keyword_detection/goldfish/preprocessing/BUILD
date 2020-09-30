@@ -38,6 +38,17 @@ py_binary(name="train_valid_split",
           python_version="PY3",
 )
 
+py_binary(name="record_personal_examples",
+          srcs=["record_personal_examples.py"],
+          deps=[
+              requirement("simpleaudio"),
+              requirement("sounddevice"),
+              requirement("tensorflow"),
+              "//friday/audio/keyword_detection/goldfish/shared:goldfish_utils",
+          ],
+          python_version="PY3",
+)
+
 cc_binary(
           name="data_pipeline",
           srcs=[

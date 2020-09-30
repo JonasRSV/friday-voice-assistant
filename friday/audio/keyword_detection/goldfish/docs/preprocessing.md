@@ -34,6 +34,8 @@ sudo apt-get install sox && sudo apt-get libsox-fmt-mp3
 
 [common voice](https://commonvoice.mozilla.org/sv-SE/datasets) is a open-source dataset provided by mozilla. It contains short to medium size utterances with accompanied text.
 
+#### Common voice sentences
+
 Start by downloading setting the DATASET_PATH and extracting the dataset into it.
 
 ```bash
@@ -58,7 +60,37 @@ The following script then converts it into Goldfish voice format
 bazel run //friday/audio/keyword_detection/goldfish/preprocessing:common_voice_to_goldfish_voice --\
   --tsv=$DATASET_PATH/cv-corpus-5.1-2020-06-22/sv-SE/validated.tsv \
   --clips=$DATASET_PATH/cv-corpus-5.1-2020-06-22/sv-SE/clips \
-  --output_prefix=$GOLDFISH_DIRECTORY/tfexamples
+  --output_prefix=$GOLDFISH_DIRECTORY/tfexamples.cv_long
+```
+
+#### Common Voice Single Word
+
+Start by downloading setting the DATASET_PATH and extracting the dataset into it.
+
+```bash 
+DATASET_PATH=$HOME/.data
+mkdir -p $DATASET_PATH
+cd $DATASET_PATH \
+    && curl https://cdn.commonvoice.mozilla.org/cv-corpus-5.1-singleword/cv-corpus-5.1-singleword.tar.gz > cv_single_word.tar.gz\
+    && tar -xvf cv_single_word.tar.gz
+```
+
+Then create experiment directory 
+
+```bash
+EXPERIMENT_NAME=$(date | tr " " "_")
+GOLDFISH_DIRECTORY=${DATASET_PATH?}/friday/goldfish/${EXPERIMENT_NAME?}
+mkdir -p $GOLDFISH_DIRECTORY
+```
+
+The following script then converts it into Goldfish voice format, one needs to set $LANGUAGE
+
+
+```bash
+bazel run //friday/audio/keyword_detection/goldfish/preprocessing:common_voice_to_goldfish_voice --\
+  --tsv=$DATASET_PATH/cv-corpus-5.1-singleword/${LANGUAGE?}/validated.tsv \
+  --clips=$DATASET_PATH/cv-corpus-5.1-singleword/${LANGUAGE?}/clips \
+  --output_prefix=$GOLDFISH_DIRECTORY/tfexamples.cv_short
 ```
 
 ### Google Speech Commands
@@ -83,9 +115,22 @@ The following script then converts it into Goldfish voice format
 
 ```bash
 bazel run //friday/audio/keyword_detection/goldfish/preprocessing:google_speech_commands_to_goldfish_voice --\
-  --base_path=$DATASET_PATH/google_speech_commands \
-  --output_prefix=$GOLDFISH_DIRECTORY/tfexamples\
+  --base_path=${DATASET_PATH?}/google_speech_commands \
+  --output_prefix=${GOLDFISH_DIRECTORY?}/tfexamples.speech_commands\
   --sample_rate=8000
+```
+
+### Recording your own
+
+This assumes GOLDFISH_DIRECTORY is set
+
+```bash
+bazel run //friday/audio/keyword_detection/goldfish/preprocessing:record_personal_examples --\
+    --file_prefix=${GOLDFISH_DIRECTORY?}/tfexamples\
+    --sample_rate=8000\
+    --clip_length=2.0\
+    --text="TEXT IN RECORDING HERE"
+
 ```
 
 ### Cleaning Goldfish Voice data
