@@ -1,4 +1,4 @@
 {
-  "label_map_path": "friday/audio/keyword_detection/goldfish/configs/google_speech_commands_few_label_map.json",
+  "label_map_path": "friday/audio/keyword_detection/goldfish/configs/tänd_släck.json",
   "certainty_barrier": 0.5
 }

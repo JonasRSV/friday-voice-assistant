@@ -1,5 +1,6 @@
 #include "audio/keyword_detection/goldfish/goldfish.hpp"
 #include "audio/keyword_detection/keyword_detection.hpp"
+#include "audio/playback/playback.hpp"
 #include "audio/recording/recording.hpp"
 #include "audio/replay_buffer/replay_buffer.hpp"
 #include "setup/friday_options.hpp"
@@ -45,6 +46,7 @@ int main(int argc, const char *argv[]) {
   recording::setup(get_config(opt, recording::config()));
   replay_buffer::setup(get_config(opt, replay_buffer::config()));
   keyword_detection::setup(get_config(opt, keyword_detection::config()));
+  playback::setup(get_config(opt, playback::config()));
 
   LOG(INFO) << TAG("main") << AixLog::Color::GREEN << "Purging audio buffer.. "
             << AixLog::Color::NONE << std::endl;

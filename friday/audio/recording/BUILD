@@ -12,5 +12,6 @@ cc_library(
     visibility = [
         "//friday:__pkg__",
         "//friday/audio/replay_buffer:__pkg__",
+        "//friday/audio/playback:__pkg__",
     ],
 )

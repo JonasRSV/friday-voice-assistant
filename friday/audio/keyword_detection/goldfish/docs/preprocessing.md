@@ -162,5 +162,5 @@ bazel run //friday/audio/keyword_detection/goldfish/preprocessing:train_valid_sp
  "--source_prefix=${GOLDFISH_DIRECTORY?}/ptfexamples*"\
  --sink_prefix=${GOLDFISH_DIRECTORY?}/ptfexamples\
  --examples_per_shard=100\
- --train_fraction=0.8
+ --train_fraction=0.9
 ```
