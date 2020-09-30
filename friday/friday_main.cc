@@ -46,8 +46,13 @@ int main(int argc, const char *argv[]) {
   replay_buffer::setup(get_config(opt, replay_buffer::config()));
   keyword_detection::setup(get_config(opt, keyword_detection::config()));
 
+  LOG(INFO) << TAG("main") << AixLog::Color::GREEN << "Purging audio buffer.. "
+            << AixLog::Color::NONE << std::endl;
   // to let replay_buffer recording get started
   usleep(SECONDS(2));
+
+  LOG(INFO) << TAG("main") << AixLog::Color::GREEN << "Starting to listen.. "
+            << AixLog::Color::NONE << std::endl;
 
   while (true) {
     std::string prediction = keyword_detection::prediction();

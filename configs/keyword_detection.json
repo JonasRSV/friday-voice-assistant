@@ -1,5 +1,4 @@
 {
   "label_map_path": "friday/audio/keyword_detection/goldfish/configs/google_speech_commands_few_label_map.json",
-  "certainty_barrier": 0.5,
-  "predictions_per_second": 4
+  "certainty_barrier": 0.5
 }

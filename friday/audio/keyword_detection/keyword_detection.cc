@@ -13,7 +13,6 @@ namespace keyword_detection {
 
 nlohmann::json index_to_name;
 
-float sleep_between_predictions;
 float certainty_barrier;
 size_t prediction_dim;
 float *probability_buffer;
@@ -81,20 +80,13 @@ void setup(nlohmann::json config) {
       config::get_optional_config<float>(config, "certainty_barrier",
                                          /*tag=*/"keyword_detection",
                                          /*default=*/0.5);
-  float predictions_per_second =
-      config::get_optional_config<float>(config, "predictions_per_second",
-                                         /*tag=*/"keyword_detection",
-                                         /*default=*/3.0);
-
-  sleep_between_predictions = 1 / predictions_per_second;
 
   prediction_dim = goldfish::prediction_dim();
   probability_buffer = (float *)calloc(prediction_dim, sizeof(float));
 
   LOG(INFO) << TAG("keyword_detection") << AixLog::Color::GREEN
-            << "Setup keyword detection\nlabel_map_path: " << label_map_path
-            << "\ncertainty_barrier: " << certainty_barrier
-            << "\npredictions_per_second: " << predictions_per_second
+            << "Setup keyword detection -- label_map_path: " << label_map_path
+            << " -- certainty_barrier: " << certainty_barrier
             << AixLog::Color::NONE << std::endl;
 }
 
@@ -104,7 +96,7 @@ std::string prediction() {
   size_t frame_size = replay_buffer::frame_size();
 
   // If a prediction has been made and if accumulation buffer is active
-  bool predict_flag = false, buffer_active_flag = false;
+  bool predict_flag = false, is_unknown = true, buffer_active = false;
 
   // The number of predictions in accumulation buffer
   float num_accum_predictions = 0.0;
@@ -115,7 +107,9 @@ std::string prediction() {
   // Index of prediction (argmax)
   int prediction;
   while (true) {
-    usleep(SECONDS(sleep_between_predictions));
+    is_unknown = true;
+
+    // Blocks until we get a new frame
     int16_t *predict_frame = replay_buffer::next_sample();
 
     if (predict_frame != nullptr) {
@@ -126,8 +120,10 @@ std::string prediction() {
     }
 
     // The heuristic:
-    // If a prediction is made we will start accumulating predictions until
-    // a silence is encountered
+    // If a prediction is made of a known class we will start accumulating until
+    // 1 of 2 thing happends
+    // 1. The prediction threshhold is reached and we return prediction.
+    // 2. A silence or unknown prediction is encountered and we reset
 
     // Start with checking if a prediction was made, if so, get the most likely
     // class
@@ -138,54 +134,51 @@ std::string prediction() {
                  << "predicted: " << prediction << AixLog::Color::NONE
                  << std::endl;
 
-      // If the most likely class is not silence, then we start accumulating
+      // If the most likely class is not unknown, then we accumulate
       // IMPORTANT: Here we assume that 0 is always silence
       if (prediction != 0) {
-
-        buffer_active_flag = true;
-
         // add probabilities to our buffer
         num_accum_predictions += 1.0;
         add(pred.probabilities.data());
 
-        // Now we continue because everything after this code is assumed to be
-        // silence
-        continue;
+        is_unknown = false;
+        buffer_active = true;
       }
     }
 
-    // Here some kind of silence has occured, either predicted or just low
-    // energy. If our buffer is active we check how certain we are about the
-    // most probable class and if we are certain enough we return it
-    if (buffer_active_flag) {
+    // If the prediction is of a known class
+    if (!is_unknown) {
 
-      // get certainty of our most likely class
-      size_t most_likely = argmax(probability_buffer);
-      float certainty = max(probability_buffer) / num_accum_predictions;
+      if (num_accum_predictions > 1.0) {
+        // get certainty of our most likely class
+        float certainty = max(probability_buffer) / num_accum_predictions;
 
-      LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
-                 << "buffer_choice: " << most_likely
-                 << " name: " << index_to_name[std::to_string(most_likely)]
-                 << " certainty: " << certainty << AixLog::Color::NONE
-                 << std::endl;
+        LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
+                   << "buffer_choice: " << prediction
+                   << " name: " << index_to_name[std::to_string(prediction)]
+                   << " certainty: " << certainty << AixLog::Color::NONE
+                   << std::endl;
 
-      // If we are certain enough we make a prediction
-      if (max(probability_buffer) / num_accum_predictions > certainty_barrier)
-        return index_to_name[std::to_string(most_likely)];
-      else
-        LOG(INFO) << TAG("keyword_detection") << AixLog::Color::CYAN
-                  << "best guess was "
-                  << index_to_name[std::to_string(most_likely)]
-                  << " certainty: " << certainty << AixLog::Color::NONE
-                  << std::endl;
+        // If we are certain enough we make a prediction
+        if (max(probability_buffer) / num_accum_predictions > certainty_barrier)
+          return index_to_name[std::to_string(prediction)];
+        else
+          LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::CYAN
+                     << "best guess is "
+                     << index_to_name[std::to_string(prediction)]
+                     << " certainty: " << certainty << AixLog::Color::NONE
+                     << std::endl;
+      }
 
+    } else if (buffer_active) {
+      // Is a unknown class, we will reset.
       LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
                  << "resetting buffer" << AixLog::Color::NONE << std::endl;
 
       // Otherwise we reset the buffer and start over
       num_accum_predictions = 0.0;
-      buffer_active_flag = false;
       reset_buffer();
+      buffer_active = false;
     }
   }
 }

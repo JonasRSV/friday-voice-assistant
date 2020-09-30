@@ -32,6 +32,8 @@ double energy_barrier;
 
 std::thread *recording_thread;
 
+volatile bool has_new_frame = false;
+
 void move_ptr_distance(size_t *ptr, size_t distance) {
   *ptr = (*ptr + distance) % buffer_size;
 }
@@ -205,14 +207,17 @@ void purge() {
 }
 
 void add(int16_t *audio, size_t size) {
-  LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
-             << "adding between  " << au_bk_pt << " to  " << au_fw_pt
-             << AixLog::Color::NONE << std::endl;
+  // This is super verbose
+  //LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
+             //<< "adding between  " << au_bk_pt << " to  " << au_fw_pt
+             //<< AixLog::Color::NONE << std::endl;
 
   copy_audio_to_buffer(&au_bk_pt, &au_fw_pt, audio);
 
   move_ptr_distance(&au_bk_pt, size);
   move_ptr_distance(&au_fw_pt, size);
+
+  has_new_frame = true;
 }
 
 void clear() {
@@ -233,6 +238,14 @@ int16_t *next_sample() {
   // Seek for interesting frames while distance between fr_fw_pt and au_bk_pt is
   // lg than 1
 
+  // Block while no new frame 
+  while (!has_new_frame) {
+    usleep(100);
+  }
+
+  // Say that current frame is no longer new
+  has_new_frame = false;
+
   // This makes sure the fr_ptrs are in a valid position
   ensure_frame_pointers_are_in_ok_position();
 
@@ -240,9 +253,10 @@ int16_t *next_sample() {
   // frame.
   double energy = find_next_frame();
 
-  LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
-             << "next sample between - " << fr_bk_pt << " to " << fr_fw_pt
-             << " energy " << energy << AixLog::Color::NONE << std::endl;
+  // Also super verbose
+  //LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
+             //<< "next sample between - " << fr_bk_pt << " to " << fr_fw_pt
+             //<< " energy " << energy << AixLog::Color::NONE << std::endl;
 
   if (energy > energy_barrier) {
     // We have enough energy
