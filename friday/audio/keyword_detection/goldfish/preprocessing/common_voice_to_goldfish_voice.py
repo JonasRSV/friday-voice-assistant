@@ -99,8 +99,6 @@ def worker(job: Job):
 
 
 def main(tsv: str, clips: str):
-    logging.basicConfig(level=logging.INFO)
-
     tsv_path: pathlib.Path = pathlib.Path(tsv)
     clips_path: pathlib.Path = pathlib.Path(clips)
 
