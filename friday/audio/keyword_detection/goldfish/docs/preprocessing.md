@@ -60,7 +60,8 @@ The following script then converts it into Goldfish voice format
 bazel run //friday/audio/keyword_detection/goldfish/preprocessing:common_voice_to_goldfish_voice --\
   --tsv=$DATASET_PATH/cv-corpus-5.1-2020-06-22/sv-SE/validated.tsv \
   --clips=$DATASET_PATH/cv-corpus-5.1-2020-06-22/sv-SE/clips \
-  --output_prefix=$GOLDFISH_DIRECTORY/tfexamples.cv_long
+  --output_prefix=$GOLDFISH_DIRECTORY/tfexamples.cv_long\
+  --sample_rate=8000
 ```
 
 #### Common Voice Single Word

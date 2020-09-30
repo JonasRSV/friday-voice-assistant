@@ -70,7 +70,6 @@ def record_background(file_prefix: str, clip_length: float, sample_rate: int):
                 sample_rate=sample_rate
             )
 
-            #simpleaudio.play_buffer(audio_data, num_channels=1, bytes_per_sample=2, sample_rate=sample_rate)
             print("Stored")
 
             datawriter.write(example.SerializeToString())

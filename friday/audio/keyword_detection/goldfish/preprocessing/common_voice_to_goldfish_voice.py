@@ -73,6 +73,8 @@ def get_jobs(tsv_df: pd.DataFrame,
             audio_files, sentences = [], []
             id += 1
 
+    print("Total number of audio files", id - 1)
+
     return jobs
 
 
