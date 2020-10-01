@@ -66,29 +66,20 @@ def raw_audio_model(signal: tf.Tensor, num_labels: int, mode: tf.estimator.ModeK
     Returns:
         Logits
     """
+
     x = tf.expand_dims(signal, -1)
-    x = tf.compat.v1.layers.Conv1D(filters=64,
-                                   kernel_size=7,
-                                   strides=2,
+    x = tf.compat.v1.layers.Conv1D(filters=2,
+                                   kernel_size=500,
+                                   strides=20,
                                    activation=tf.nn.relu)(x)
-    x = tf.compat.v1.layers.MaxPooling1D(pool_size=7, strides=3)(x)
-    x = tf.compat.v1.layers.Conv1D(filters=64,
-                                   kernel_size=5,
-                                   strides=2,
+    x = tf.compat.v1.layers.Conv1D(filters=5,
+                                   kernel_size=200,
+                                   strides=4,
                                    activation=tf.nn.relu)(x)
-    x = tf.compat.v1.layers.MaxPooling1D(pool_size=3, strides=2)(x)
-    x = tf.compat.v1.layers.Conv1D(filters=64,
-                                   kernel_size=3,
-                                   strides=2,
-                                   activation=tf.nn.relu)(x)
-    x = tf.compat.v1.layers.MaxPooling1D(pool_size=3, strides=2)(x)
-    x = tf.compat.v1.layers.Conv1D(filters=64,
-                                   kernel_size=3,
-                                   activation=tf.nn.relu)(x)
-    x = tf.compat.v1.layers.MaxPooling1D(pool_size=3, strides=2)(x)
+    x = tf.compat.v1.layers.MaxPooling1D(15, strides=10)(x)
     x = tf.compat.v1.layers.Flatten()(x)
-    #x = tf.compat.v1.layers.Dropout(rate=0.25)(x, training=mode == tf.estimator.ModeKeys.TRAIN)
-    x = tf.compat.v1.layers.Dense(256, activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Dropout(rate=0.25)(x, training=mode == tf.estimator.ModeKeys.TRAIN)
+    x = tf.compat.v1.layers.Dense(64, activation=tf.nn.relu)(x)
     x = tf.compat.v1.layers.Dense(num_labels, activation=None)(x)
 
     return x
@@ -97,17 +88,17 @@ def raw_audio_model(signal: tf.Tensor, num_labels: int, mode: tf.estimator.ModeK
 def mfcc_model(x: tf.Tensor, num_labels: int, mode: tf.estimator.ModeKeys) -> tf.Tensor:
     x = tf.expand_dims(x, -1)
 
-    x = tf.compat.v1.layers.Conv2D(filters=8, kernel_size=(7, 3), activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Conv2D(filters=64, kernel_size=(7, 3), activation=tf.nn.relu)(x)
 
     x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 3), strides=(1, 1))(x)
-    x = tf.compat.v1.layers.Conv2D(filters=16, kernel_size=(1, 7), activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Conv2D(filters=128, kernel_size=(1, 7), activation=tf.nn.relu)(x)
     x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 4), strides=(1, 1))(x)
-    x = tf.compat.v1.layers.Conv2D(filters=32, kernel_size=(1, 10), padding="valid", activation=tf.nn.relu)(x)
-    x = tf.compat.v1.layers.Conv2D(filters=64, kernel_size=(7, 1), activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Conv2D(filters=256, kernel_size=(1, 10), padding="valid", activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Conv2D(filters=512, kernel_size=(7, 1), activation=tf.nn.relu)(x)
     x = tf.keras.layers.GlobalMaxPooling2D()(x)
 
-    x = tf.compat.v1.layers.Dropout(rate=0.25)(x, training=mode == tf.estimator.ModeKeys.TRAIN)
-    x = tf.compat.v1.layers.Dense(64, activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Dropout(rate=0.4)(x, training=mode == tf.estimator.ModeKeys.TRAIN)
+    x = tf.compat.v1.layers.Dense(256, activation=tf.nn.relu)(x)
     logits = tf.compat.v1.layers.Dense(num_labels, activation=None)(x)
     return logits
 
@@ -162,9 +153,9 @@ def make_model_fn(summary_output_dir: str,
            signal=signal,
            coefficients=27,
            sample_rate=sample_rate,
-           frame_length=256,
-           frame_step=128,
-           fft_length=256,
+           frame_length=1024,
+           frame_step=512,
+           fft_length=1024,
            num_mel_bins=80,
            lower_edge_hertz=128,
            upper_edge_hertz=3800
@@ -179,7 +170,7 @@ def make_model_fn(summary_output_dir: str,
         if mode != tf.estimator.ModeKeys.PREDICT:
             labels = features["label"]
 
-            weights = tf.gather(params=[1.5, 1.0, 1.0], indices=labels)
+            weights = tf.gather(params=[5.0, 1.0, 1.0], indices=labels)
 
             loss_op = tf.identity(tf.losses.sparse_softmax_cross_entropy(
                 labels=labels, logits=logits,
