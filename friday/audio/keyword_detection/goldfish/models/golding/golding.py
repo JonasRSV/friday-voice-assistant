@@ -139,7 +139,10 @@ def get_metric_ops(labels: tf.Tensor, predicted_class: tf.Tensor, num_labels: in
 def make_model_fn(summary_output_dir: str,
                   num_labels: int,
                   sample_rate: int = 44100,
-                  save_summaries_every: int = 100):
+                  save_summaries_every: int = 100,
+                  learning_rate: float = 0.001,
+                  decay_rate: float = 0.95,
+                  decay_steps: int = 50):
     def model_fn(features, labels, mode, config, params):
         audio_signal = features["audio"]
 
@@ -183,8 +186,19 @@ def make_model_fn(summary_output_dir: str,
                 weights=weights),
                 name="loss_op")
 
+            exp_learning_rate = tf.compat.v1.train.exponential_decay(
+                learning_rate=learning_rate,
+                global_step=tf.compat.v1.train.get_global_step(),
+                decay_steps=decay_steps,
+                decay_rate=decay_rate,
+                staircase=True
+            )
+
+            # Add to summary
+            tf.summary.scalar("learning rate", exp_learning_rate)
+
             train_op = tf.compat.v1.train.AdamOptimizer(
-                learning_rate=0.0001).minimize(
+                learning_rate=exp_learning_rate).minimize(
                 loss=loss_op,
                 global_step=tf.compat.v1.train.get_global_step())
 
@@ -255,6 +269,18 @@ def main():
                         default=32,
                         type=int,
                         help="Batch size of training")
+    parser.add_argument("--start_learning_rate",
+                        default=0.001,
+                        type=float,
+                        help="Start learning rate")
+    parser.add_argument("--learning_rate_decay",
+                        default=0.95,
+                        type=float,
+                        help="Decay of learning rate")
+    parser.add_argument("--learning_decay_steps",
+                        default=50,
+                        type=int,
+                        help="Decay every decay_steps")
     parser.add_argument("--save_summary_every",
                         default=10000,
                         type=int,
@@ -287,7 +313,10 @@ def main():
         summary_output_dir=args.model_directory,
         num_labels=args.num_labels,
         sample_rate=args.sample_rate,
-        save_summaries_every=args.save_summary_every),
+        save_summaries_every=args.save_summary_every,
+        learning_rate=args.start_learning_rate,
+        decay_rate=args.learning_rate_decay,
+        decay_steps=args.learning_decay_steps),
         model_dir=args.model_directory,
         config=config)
 
