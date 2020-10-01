@@ -120,10 +120,13 @@ def count_labels(path: str, *_):
                 }
 
             text_counts[text]['counts'] += 1
-            text_counts[text]['label_counts'] += 1 if label else 0
+            text_counts[text]['label_counts'] += 1 if label is not None else 0
 
-    for k, v in text_counts.items():
-        print(f"{k}: {v['counts']} -- label counts: {v['label_counts']}")
+    tuples = [(v['counts'], v['label_counts'], k) for k, v in text_counts.items()]
+    tuples.sort()
+
+    for counts, label_counts, k, in tuples:
+        print(f"{k}: {counts} -- label counts: {label_counts}")
 
 
 def play_random(path: str, name: str):
