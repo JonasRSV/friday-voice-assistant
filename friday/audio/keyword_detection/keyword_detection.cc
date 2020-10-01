@@ -108,8 +108,14 @@ std::string prediction() {
     int16_t *predict_frame = replay_buffer::next_sample();
 
     if (predict_frame != nullptr) {
+
       pred = goldfish::predict(predict_frame, frame_size);
       prediction = argmax(pred.probabilities.data());
+
+      LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
+                 << "probabilities: " << pred.probabilities[0] << " "
+                 << pred.probabilities[1] << " " << pred.probabilities[2]
+                 << AixLog::Color::NONE << std::endl;
 
       if (prediction != 0) {
         float certainty = max(pred.probabilities.data());

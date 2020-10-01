@@ -46,6 +46,7 @@ def record_audio(file_prefix: str, clip_length: float, sample_rate: int, text: s
 
     datawriter.close()
 
+
 def record_background(file_prefix: str, clip_length: float, sample_rate: int):
     suffix = random.randint(0, 10000000)
     file_name = f"{file_prefix}.personal.{suffix}"
