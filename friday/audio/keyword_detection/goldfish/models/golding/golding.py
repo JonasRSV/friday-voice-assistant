@@ -2,6 +2,7 @@ import pathlib
 import tensorflow as tf
 import friday.audio.keyword_detection.goldfish.models.shared.audio as audio
 import argparse
+import sys
 from enum import Enum
 
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
@@ -55,12 +56,13 @@ def create_input_fn(mode: tf.estimator.ModeKeys,
     return input_fn
 
 
-def raw_audio_model(signal: tf.Tensor, num_labels: int) -> tf.Tensor:
+def raw_audio_model(signal: tf.Tensor, num_labels: int, mode: tf.estimator.ModeKeys) -> tf.Tensor:
     """A convolution based model.
 
     Args:
         signal: Audio signal scaled to [-1, 1]
         num_labels: The number of logits the model is expected to return
+        mode: The mode the model is running in (TRAINING or PREDICT)
     Returns:
         Logits
     """
@@ -85,6 +87,7 @@ def raw_audio_model(signal: tf.Tensor, num_labels: int) -> tf.Tensor:
                                    activation=tf.nn.relu)(x)
     x = tf.compat.v1.layers.MaxPooling1D(pool_size=3, strides=2)(x)
     x = tf.compat.v1.layers.Flatten()(x)
+    #x = tf.compat.v1.layers.Dropout(rate=0.25)(x, training=mode == tf.estimator.ModeKeys.TRAIN)
     x = tf.compat.v1.layers.Dense(256, activation=tf.nn.relu)(x)
     x = tf.compat.v1.layers.Dense(num_labels, activation=None)(x)
 
@@ -93,16 +96,18 @@ def raw_audio_model(signal: tf.Tensor, num_labels: int) -> tf.Tensor:
 
 def mfcc_model(x: tf.Tensor, num_labels: int, mode: tf.estimator.ModeKeys) -> tf.Tensor:
     x = tf.expand_dims(x, -1)
-    x = tf.compat.v1.layers.Conv2D(filters=64, kernel_size=(7, 3), activation=tf.nn.relu)(x)
+
+    x = tf.compat.v1.layers.Conv2D(filters=8, kernel_size=(7, 3), activation=tf.nn.relu)(x)
+
     x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 3), strides=(1, 1))(x)
-    x = tf.compat.v1.layers.Conv2D(filters=128, kernel_size=(1, 7), activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Conv2D(filters=16, kernel_size=(1, 7), activation=tf.nn.relu)(x)
     x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 4), strides=(1, 1))(x)
-    x = tf.compat.v1.layers.Conv2D(filters=256, kernel_size=(1, 10), padding="valid", activation=tf.nn.relu)(x)
-    x = tf.compat.v1.layers.Conv2D(filters=512, kernel_size=(7, 1), activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Conv2D(filters=32, kernel_size=(1, 10), padding="valid", activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Conv2D(filters=64, kernel_size=(7, 1), activation=tf.nn.relu)(x)
     x = tf.keras.layers.GlobalMaxPooling2D()(x)
 
     x = tf.compat.v1.layers.Dropout(rate=0.25)(x, training=mode == tf.estimator.ModeKeys.TRAIN)
-    x = tf.compat.v1.layers.Dense(256, activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Dense(64, activation=tf.nn.relu)(x)
     logits = tf.compat.v1.layers.Dense(num_labels, activation=None)(x)
     return logits
 
@@ -151,18 +156,18 @@ def make_model_fn(summary_output_dir: str,
                              sample_rate=sample_rate)
 
         signal = audio.mfcc_feature(
-            signal=signal,
-            coefficients=40,
-            sample_rate=sample_rate,
-            frame_length=1024,
-            frame_step=512,
-            fft_length=1024,
-            num_mel_bins=40,
-            lower_edge_hertz=128,
-            upper_edge_hertz=3800
+           signal=signal,
+           coefficients=27,
+           sample_rate=sample_rate,
+           frame_length=256,
+           frame_step=128,
+           fft_length=256,
+           num_mel_bins=80,
+           lower_edge_hertz=128,
+           upper_edge_hertz=3800
         )
 
-        # logits = raw_audio_model(signal=signal, num_labels=num_labels)
+        #logits = raw_audio_model(signal=signal, num_labels=num_labels, mode=mode)
 
         logits = mfcc_model(x=signal, num_labels=num_labels, mode=mode)
         predict_op = tf.nn.softmax(logits)
@@ -171,14 +176,15 @@ def make_model_fn(summary_output_dir: str,
         if mode != tf.estimator.ModeKeys.PREDICT:
             labels = features["label"]
 
-            #weights = tf.gather(params=[0.1, 5.0, 5.0], indices=labels)
+            weights = tf.gather(params=[1.5, 1.0, 1.0], indices=labels)
 
             loss_op = tf.identity(tf.losses.sparse_softmax_cross_entropy(
-                labels=labels, logits=logits),
+                labels=labels, logits=logits,
+                weights=weights),
                 name="loss_op")
 
             train_op = tf.compat.v1.train.AdamOptimizer(
-                learning_rate=0.001).minimize(
+                learning_rate=0.0001).minimize(
                 loss=loss_op,
                 global_step=tf.compat.v1.train.get_global_step())
 
@@ -273,7 +279,7 @@ def main():
     config = tf.estimator.RunConfig(
         model_dir=args.model_directory,
         save_summary_steps=args.save_summary_every,
-        log_step_count_steps=10,
+            log_step_count_steps=100,
         save_checkpoints_steps=args.eval_every,
     )
 
@@ -302,7 +308,7 @@ def main():
                 input_prefix=args.eval_prefix,
                 parallel_reads=args.parallel_reads,
                 batch_size=args.batch_size),
-            throttle_secs=30,
+            throttle_secs=5,
         )
 
         tf.estimator.train_and_evaluate(estimator, train_spec, eval_spec)
