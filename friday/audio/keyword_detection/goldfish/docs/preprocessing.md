@@ -130,7 +130,7 @@ bazel run //friday/audio/keyword_detection/goldfish/preprocessing:record_persona
     --file_prefix=${GOLDFISH_DIRECTORY?}/tfexamples\
     --sample_rate=8000\
     --clip_length=2.0\
-    --text="TEXT IN RECORDING HERE"
+    --text="[UNK]"
 
 ```
 

@@ -19,14 +19,14 @@ bazel run //friday/audio/keyword_detection/goldfish/models/golding:golding --\
     --mode="train_eval"\
     --sample_rate=8000\
     --clip_length=2.0\
-    --batch_size=32\
+    --batch_size=64\
     --start_learning_rate=0.01\
     --learning_rate_decay=0.95\
-    --learning_decay_steps=50\
+    --learning_decay_steps=1000\
     --num_labels=3\
     --max_steps=1000000\
-    --save_summary_every=100\
-    --eval_every=100\
+    --save_summary_every=500\
+    --eval_every=500\
     --parallel_reads=5
 ```
 
