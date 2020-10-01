@@ -170,11 +170,11 @@ def make_model_fn(summary_output_dir: str,
         if mode != tf.estimator.ModeKeys.PREDICT:
             labels = features["label"]
 
-            weights = tf.gather(params=[5.0, 1.0, 1.0], indices=labels)
+            #weights = tf.gather(params=[5.0, 1.0, 1.0], indices=labels)
 
             loss_op = tf.identity(tf.losses.sparse_softmax_cross_entropy(
-                labels=labels, logits=logits,
-                weights=weights),
+                labels=labels, logits=logits),
+                #weights=weights),
                 name="loss_op")
 
             exp_learning_rate = tf.compat.v1.train.exponential_decay(
