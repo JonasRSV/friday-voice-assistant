@@ -16,13 +16,13 @@ This project depends on libasound2, there is an [issue](https://github.com/Jonas
 sudo apt-get install libasound2-dev
 ```
 
-This project also depends on tensorflowlib, there is an [issue](https://github.com/JonasRSV/friday-voice-assistant/issues/2) for adding it into the project, but until then one has to add it manually, See [goldfish setup]() for instructions on downloading tensorflowlib.
+This project also depends on tensorflowlib, there is an [issue](https://github.com/JonasRSV/friday-voice-assistant/issues/2) for adding it into the project, but until then one has to add it manually, See [goldfish setup](https://github.com/JonasRSV/friday-voice-assistant/blob/master/friday/audio/keyword_detection/goldfish/README.md) for instructions on downloading tensorflowlib.
 
 
 ---
 
 ### Features
-- [philips-hue]()
+- [philips-hue](https://github.com/JonasRSV/friday-voice-assistant/blob/master/friday/third_party/philips-hue/README.md)
 
 
 ### Launching Friday
