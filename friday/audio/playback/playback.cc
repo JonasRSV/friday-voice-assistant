@@ -1,4 +1,3 @@
-#include <alsa/asoundlib.h>
 #include <string>
 
 #include "../../shared/aixlog.hpp"

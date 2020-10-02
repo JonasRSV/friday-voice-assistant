@@ -1,76 +1,46 @@
-# THIS IS A WORK IN PROGRESS 
-
-The following content is incomplete and outdated
-
----
-
 # Friday voice assistant 
 
-simple keyword assistant (WIP)
+A Simple keyword assistant, it is still very WIP.
 
 - [Requirements](#requirements)
 - [Features](#features)
-  - [Philips Hue](#philips-hue) 
 - [Launching Friday](#launching-friday)
 ---
 
-### Requirements
+### Dependencies
+---
+
+This project depends on libasound2, there is an [issue](https://github.com/JonasRSV/friday-voice-assistant/issues/1) for adding it into the project, but until then one has to install it.
 
 ```bash
 sudo apt-get install libasound2-dev
 ```
 
-Also please download lib-tensorflow, it is too big for me to be allowed to push it to github
-
-```bash
-curl  https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.14.0.tar.gz > libtensorflow-gpu-linux-x86_64-1.14.0.tar.gz
-```
-
-open it up with
-
-```bash
-tar -xvf libtensorflow-gpu-linux-x86_64-1.14.0.tar.gz
-```
-
-and copy the lib files into 
-
-```bash
-friday/audio/keyword_detection/goldfish/cppflow/tensorflow/lib
-```
+This project also depends on tensorflowlib, there is an [issue](https://github.com/JonasRSV/friday-voice-assistant/issues/2) for adding it into the project, but until then one has to add it manually, See [goldfish setup]() for instructions on downloading tensorflowlib.
 
 
 ---
 
 ### Features
+- [philips-hue]()
 
-#### Philips Hue
-
-Begin by finding the ip of the hue bridge, with nast installed you can run
-
-```bash
-HUE_IP=$(sudo nast -m | grep hue | tail -1 | grep -E -o '(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)')
-```
-
-A user needs to be created for friday. Press the button on the hue hub then run
-
-```bash
-curl -X POST -d '{"devicetype": "friday"}' ${HUE_IP?}/api
-```
-
-To list all available lights and their information run 
-
-```bash
-curl ${HUE_IP?}/api/USER_HERE/lights
-```
-
----
 
 ### Launching Friday
 
-Begin by compiling the binary
+Begin by compiling the binary, this project was developed with bazel 3.4.1, bazel is pretty 
+petty about versions so make sure you have the same one.
+
+
+for CPU
 
 ```bash
-bazel build //friday:friday
+bazel build //friday:friday --define tf=cpu
+```
+
+for GPU
+
+```bash
+bazel build //friday:friday --define tf=cpu
 ```
 
 Then launch with 
@@ -78,7 +48,6 @@ Then launch with
 
 ```bash
 # Set log-level to 5 for debug logging if something is not working
-# List audio-device with 'arecord -L'
 
 ./bazel-bin/friday/friday
   --configs=configs\

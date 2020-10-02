@@ -7,13 +7,14 @@ cc_library(
         "goldfish.hpp"
     ],
     deps = [
-        "//friday/audio/keyword_detection/goldfish/cppflow:cppflow_library",
+        "//friday/audio/keyword_detection/goldfish/tf:tf_library",
         "//friday/shared:logging",
         "//friday/shared:json",
     ],
     visibility = [
           "//visibility:public",
     ],
+    linkstatic=True
 )
 
 cc_test(

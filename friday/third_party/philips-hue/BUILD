@@ -1,11 +1,12 @@
 cc_library(
     name = "philips_hue_library",
-    srcs = ["philips_hue_main.cc"],
+    srcs = ["philips_hue.cc"],
     hdrs = ["philips_hue.hpp"],
     deps = [
         "//friday/shared:logging",
-        "//friday/shared:config_loader",
-        "//friday/control-web/shared:httplib",
+        "//friday/shared:httplib",
+        "//friday/shared:config_library",
+        "//friday/shared:json",
     ],
     visibility = [
         "//friday:__pkg__",
@@ -13,10 +14,11 @@ cc_library(
 )
 
 cc_test(
-    name = "philips_hue_main_test",
-    srcs = ["philips_hue_main_test.cc"],
-    data = ["//configs/philips-hue:philips_hue_files"],
-    deps = ["//friday/testing:testing_library",
-            "//friday/philips-hue:philips_hue_library",
+    name = "philips_hue_test",
+    srcs = ["philips_hue_test.cc"],
+    data = ["//configs:configs"],
+    deps = [
+        "//friday/testing:testing_library",
+        ":philips_hue_library",
     ],
 )

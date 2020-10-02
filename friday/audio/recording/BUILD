@@ -8,7 +8,7 @@ cc_library(
         "//friday/shared:json",
         "//friday/shared:config_library",
     ],
-    linkopts = ["-lasound"],
+    linkopts = ["-lasound" ],
     visibility = [
         "//friday:__pkg__",
         "//friday/audio/replay_buffer:__pkg__",

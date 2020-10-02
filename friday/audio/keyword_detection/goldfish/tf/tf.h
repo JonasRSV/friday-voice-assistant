@@ -1,5 +1,5 @@
-#ifndef CPPFLOW_H_C0VYXYJB
-#define CPPFLOW_H_C0VYXYJB
+#ifndef TF_H_QFZK5X2S
+#define TF_H_QFZK5X2S
 
 #include "tensorflow/include/tensorflow/c/c_api.h"
 #include <algorithm>
@@ -30,6 +30,7 @@ public:
 
   int n_dims;
   int64_t *dims;
+
 private:
   TF_DataType type;
   void *data;
@@ -64,4 +65,4 @@ public:
   friend class Tensor;
 };
 
-#endif /* end of include guard: CPPFLOW_H_C0VYXYJB */
+#endif /* end of include guard: TF_H_QFZK5X2S */

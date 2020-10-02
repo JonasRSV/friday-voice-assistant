@@ -20,10 +20,10 @@ bazel run //friday/audio/keyword_detection/goldfish/models/golding:golding --\
     --sample_rate=8000\
     --clip_length=2.0\
     --batch_size=64\
-    --start_learning_rate=0.001\
+    --start_learning_rate=0.01\
     --learning_rate_decay=0.95\
     --learning_decay_steps=500\
-    --num_labels=3\
+    --num_labels=7\
     --max_steps=1000000\
     --save_summary_every=500\
     --eval_every=500\
@@ -37,6 +37,6 @@ bazel run //friday/audio/keyword_detection/goldfish/models/golding:golding --\
     --mode="export"\
     --sample_rate=8000\
     --clip_length=2.0\
-    --num_labels=3
+    --num_labels=7
     
 ```

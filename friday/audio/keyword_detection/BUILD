@@ -14,6 +14,7 @@ cc_library(
     visibility = [
         "//friday:__pkg__",
     ],
+
 )
 
 cc_test(

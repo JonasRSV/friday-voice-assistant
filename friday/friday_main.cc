@@ -5,6 +5,7 @@
 #include "audio/replay_buffer/replay_buffer.hpp"
 #include "setup/friday_options.hpp"
 #include "shared/aixlog.hpp"
+#include "third_party/philips-hue/philips_hue.hpp"
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -47,6 +48,7 @@ int main(int argc, const char *argv[]) {
   replay_buffer::setup(get_config(opt, replay_buffer::config()));
   keyword_detection::setup(get_config(opt, keyword_detection::config()));
   playback::setup(get_config(opt, playback::config()));
+  philips_hue::setup(get_config(opt, philips_hue::config()));
 
   LOG(INFO) << TAG("main") << AixLog::Color::GREEN << "Purging audio buffer.. "
             << AixLog::Color::NONE << std::endl;
@@ -62,6 +64,8 @@ int main(int argc, const char *argv[]) {
     LOG(INFO) << TAG("main") << AixLog::Color::GREEN
               << "Predicted: " << prediction << AixLog::Color::NONE
               << std::endl;
+
+    philips_hue::dispatch(prediction);
 
     usleep(SECONDS(2.0));
   }

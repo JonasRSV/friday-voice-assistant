@@ -2,7 +2,6 @@
 #include "../../shared/config.hpp"
 #include "../../shared/json.hpp"
 #include "recording.hpp"
-#include <alsa/asoundlib.h>
 #include <stdio.h>
 
 namespace recording {

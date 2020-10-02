@@ -3,7 +3,9 @@ bazel-out
 bazel-testlogs
 bazel-genfiles
 bazel-friday-voice-assistant
-friday/audio/keyword_detection/goldfish/cppflow/tensorflow/lib/cpu/
-friday/audio/keyword_detection/goldfish/cppflow/tensorflow/lib/gpu/
+friday/audio/keyword_detection/goldfish/tf/tensorflow/lib/linux-x86-64-cpu/libtensorflow*
+friday/audio/keyword_detection/goldfish/tf/tensorflow/lib/linux-x86-64-gpu/libtensorflow*
+friday/audio/keyword_detection/goldfish/tf/tensorflow/lib/raspberryPi32/libtensorflow*
+friday/audio/keyword_detection/goldfish/tf/tensorflow/lib/rock64/libtensorflow*
 .idea/
-
+configs/philips_hue.json
