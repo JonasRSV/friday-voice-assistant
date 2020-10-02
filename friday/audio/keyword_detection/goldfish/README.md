@@ -44,9 +44,9 @@ It should contain something like
 ./include/tensorflow/c/eager/c_api.h
 ```
 
-we are only interested in the library files since the includes are already available at [friday/audio/keyword_detection/goldfish/cppflow/tensorflow/include]()
+we are only interested in the library files since the includes are already available at [friday/audio/keyword_detection/goldfish/tf/tensorflow/include](https://github.com/JonasRSV/friday-voice-assistant/tree/master/friday/audio/keyword_detection/goldfish/tf/tensorflow/include/tensorflow/c)
 
-We want to copy the library files into the correct place. If you look at [friday/audio/keyword_detection/goldfish/cppflow/tensorflow/lib]() you should see a few empty directories. For example "linux-x86-64-gpu", if you downloaded the linux GPU 64bit library that is where you should put the library files. 
+We want to copy the library files into the correct place. If you look at [friday/audio/keyword_detection/goldfish/cppflow/tensorflow/lib](https://github.com/JonasRSV/friday-voice-assistant/tree/master/friday/audio/keyword_detection/goldfish/tf/tensorflow/lib) you should see a few empty directories. For example "linux-x86-64-gpu", if you downloaded the linux GPU 64bit library that is where you should put the library files. 
 
 
 ### Testing
