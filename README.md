@@ -40,7 +40,7 @@ bazel build //friday:friday --define tf=cpu
 for GPU
 
 ```bash
-bazel build //friday:friday --define tf=cpu
+bazel build //friday:friday --define tf=gpu
 ```
 
 Then launch with 
