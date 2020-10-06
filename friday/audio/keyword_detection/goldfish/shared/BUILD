@@ -23,6 +23,7 @@ py_library(name="goldfish_utils",
             "//friday/audio/keyword_detection/goldfish/preprocessing:__pkg__",
             "//friday/audio/keyword_detection/goldfish/shared:__pkg__",
             "//friday/audio/keyword_detection/goldfish/models/golding:__pkg__",
+            "//friday/audio/keyword_detection/goldfish/models/toppydat:__pkg__",
         ],
 )
 
