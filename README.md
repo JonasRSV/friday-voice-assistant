@@ -8,6 +8,7 @@ A Simple keyword assistant, it is still very WIP.
 ---
 
 ### Dependencies
+
 ---
 
 This project depends on libasound2, there is an [issue](https://github.com/JonasRSV/friday-voice-assistant/issues/1) for adding it into the project, but until then one has to install it.

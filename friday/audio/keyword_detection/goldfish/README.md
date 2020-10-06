@@ -6,7 +6,7 @@
 - [Testing](#testing)
 
 Goldfish is the keyword spotting model used by friday. For instructions on training your own see [preprocessing](preprocessing.md) 
-and [model_golding](model_golding.md). 
+and [model_magikarp](docs/model_magikarp.md). 
 
 ## Developing 
 

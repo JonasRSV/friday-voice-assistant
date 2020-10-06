@@ -65,7 +65,7 @@ int main(int argc, const char *argv[]) {
               << "Predicted: " << prediction << AixLog::Color::NONE
               << std::endl;
 
-    philips_hue::dispatch(prediction);
+    //philips_hue::dispatch(prediction);
 
     usleep(SECONDS(2.0));
   }

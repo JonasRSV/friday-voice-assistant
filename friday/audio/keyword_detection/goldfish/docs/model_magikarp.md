@@ -5,14 +5,14 @@ This document explains how to train the Golding keyword spotting model. First se
 model output directory
 
 ```bash
-EXPERIMENT_NAME=golding.$(date | tr " " "_")
+EXPERIMENT_NAME=magikarp.$(date | tr " " "_")
 MODEL_OUTPUT=/tmp/$EXPERIMENT_NAME
 ```
 
 Then for training launch
 
 ```bash
-bazel run //friday/audio/keyword_detection/goldfish/models/golding:golding --\
+bazel run //friday/audio/keyword_detection/goldfish/models/magikarp:magikarp --\
     "--train_prefix=$GOLDFISH_DIRECTORY/ptfexamples.train*"\
     "--eval_prefix=$GOLDFISH_DIRECTORY/ptfexamples.valid*"\
     --model_directory=$MODEL_OUTPUT\
@@ -32,7 +32,7 @@ bazel run //friday/audio/keyword_detection/goldfish/models/golding:golding --\
 
 To Export after training run
 ```bash
-bazel run //friday/audio/keyword_detection/goldfish/models/golding:golding --\
+bazel run //friday/audio/keyword_detection/goldfish/models/magikarp:magikarp --\
     --model_directory=$MODEL_OUTPUT\
     --mode="export"\
     --sample_rate=8000\
