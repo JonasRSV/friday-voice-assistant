@@ -2,8 +2,8 @@
 
 - [Goldfish Voice](#goldfish-voice)
 - [Common Voice](#common-voice)
-- [Google Speech Commands](google-speech_commands)
-- [Recording your own](recording-your-own)
+- [Google Speech Commands](#google-speech_commands)
+- [Recording your own](#recording-your-own)
 - [Cleaning Data](#cleaning-goldfish-voice-data)
 - [Splitting](#splitting)
 
