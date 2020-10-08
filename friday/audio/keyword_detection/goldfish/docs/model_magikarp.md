@@ -1,7 +1,7 @@
 
-# Golding
+# Magikarp
 
-This document explains how to train the Golding keyword spotting model. First set the
+This document explains how to train the Magikarp keyword spotting model. First set the
 model output directory
 
 ```bash
