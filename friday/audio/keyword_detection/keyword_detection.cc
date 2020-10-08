@@ -1,6 +1,7 @@
 #include "../../shared/aixlog.hpp"
 #include "../../shared/config.hpp"
 #include "../../shared/json.hpp"
+#include "../../shared/print_utils.hpp"
 #include "../playback/playback.hpp"
 #include "../replay_buffer/replay_buffer.hpp"
 #include "goldfish/goldfish.hpp"
@@ -53,11 +54,6 @@ float max(float *buffer) {
   }
 
   return largest_probability;
-}
-
-void add(float *prediction) {
-  for (size_t i = 0; i < prediction_dim; i++)
-    probability_buffer[i] += prediction[i];
 }
 
 } // namespace
@@ -113,8 +109,7 @@ std::string prediction() {
       prediction = argmax(pred.probabilities.data());
 
       LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
-                 << "probabilities: " << pred.probabilities[0] << " "
-                 << pred.probabilities[1] << " " << pred.probabilities[2]
+                 << "probabilities: " << pred.probabilities
                  << AixLog::Color::NONE << std::endl;
 
       if (prediction != 0) {
@@ -126,16 +121,11 @@ std::string prediction() {
                    << " certainty: " << certainty << AixLog::Color::NONE
                    << std::endl;
 
-        LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
-                   << "probabilities: " << pred.probabilities[0] << " "
-                   << pred.probabilities[1] << " " << pred.probabilities[2]
-                   << AixLog::Color::NONE << std::endl;
-
         // If we are certain enough we make a prediction
         if (max(pred.probabilities.data()) > certainty_barrier) {
-          //std::cout << "Picked " << std::endl;
-          //playback::play_audio_frame(predict_frame, 16000, 8000);
-          //usleep(SECONDS(5.0));
+          // std::cout << "Picked " << std::endl;
+          // playback::play_audio_frame(predict_frame, 16000, 8000);
+          // usleep(SECONDS(5.0));
 
           return index_to_name[std::to_string(prediction)];
         } else

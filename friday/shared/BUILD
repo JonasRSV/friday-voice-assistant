@@ -28,7 +28,6 @@ cc_library(
     ],
 )
 
-# This is where we put external header libraries that are used in controlling things via web.
 cc_library(
     name = "httplib",
     hdrs = ["httplib.h"],
@@ -37,3 +36,11 @@ cc_library(
     ],
 )
 
+
+cc_library(
+    name = "print_utils",
+    hdrs = ["print_utils.hpp"],
+    visibility = [
+        "//visibility:public",
+    ],
+)

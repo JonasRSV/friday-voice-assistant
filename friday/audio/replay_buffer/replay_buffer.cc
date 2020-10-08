@@ -25,13 +25,28 @@ size_t au_fw_pt;
 size_t model_frame_size;
 size_t audio_frame_size;
 
+// How far behind the frame pointers can be the audio pointers
 size_t max_predict_delay;
-size_t predict_jump;
 
-double energy_barrier;
+// The mean energy is a measure of the average energy.
+double mean_energy;
+
+// The deviation energy is a measure of how much the energy is varying.
+double deviation_energy;
+
+// How quickly the mean and deviation energies are updated given new energy
+// estimates.
+double energy_transfer_rate;
+
+// How many deviations above the mean_energy for the model to react
+double deviations;
+
+// To avoid becoming too sensitive after being quite a long time
+double minimum_deviation_energy;
 
 std::thread *recording_thread;
 
+// If the audio thread has added a new frame
 volatile bool has_new_frame = false;
 
 void move_ptr_distance(size_t *ptr, size_t distance) {
@@ -151,11 +166,11 @@ void listen() {
   size_t sample_rate = recording::sample_rate();
   LOG(INFO) << TAG("replay_buffer") << AixLog::Color::GREEN
             << "Starting audio recording -- frame_size: " << frame_size
-            << " -- sample_rate: " << sample_rate 
-            << AixLog::Color::NONE << std::endl;
+            << " -- sample_rate: " << sample_rate << AixLog::Color::NONE
+            << std::endl;
 
-  // We forget some frames because audio in the beginning of recording is sometimes
-  // garbled, for some reason.
+  // We forget some frames because audio in the beginning of recording is
+  // sometimes garbled, for some reason.
   int frames_to_forget = 1 + (int)(sample_rate * 2 / frame_size);
   for (int i = 0; i < frames_to_forget; i++)
     recording::get_next_audio_frame();
@@ -181,10 +196,17 @@ void setup(nlohmann::json config) {
   // The maximum distance allowed between the fr_bk_pt and au_fw_pt
   max_predict_delay = config::get_required_config<size_t>(
       config, "max_predict_delay", /*tag=*/"replay_buffer");
-  predict_jump = config::get_optional_config<size_t>(
-      config, "predict_jump", /*tag=*/"replay_buffer", /*default=*/0);
-  energy_barrier = config::get_optional_config<double>(
-      config, "energy_barrier", /*tag=*/"replay_buffer", /*default=*/500.0);
+  energy_transfer_rate = config::get_optional_config<double>(
+      config, "energy_transfer_rate", /*tag=*/"replay_buffer",
+      /*default=*/0.2);
+  mean_energy = config::get_optional_config<double>(
+      config, "mean_energy", /*tag=*/"replay_buffer", /*default=*/500);
+  deviation_energy = config::get_optional_config<double>(
+      config, "deviation_energy", /*tag=*/"replay_buffer", /*default=*/100);
+  minimum_deviation_energy = config::get_optional_config<double>(
+      config, "minimum_deviation_energy", /*tag=*/"replay_buffer", /*default=*/50);
+  deviations = config::get_optional_config<double>(
+      config, "deviations", /*tag=*/"replay_buffer", /*default=*/1);
 
   fr_bk_pt = 0;
   fr_fw_pt = model_frame_size;
@@ -208,9 +230,9 @@ void purge() {
 
 void add(int16_t *audio, size_t size) {
   // This is super verbose
-  //LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
-             //<< "adding between  " << au_bk_pt << " to  " << au_fw_pt
-             //<< AixLog::Color::NONE << std::endl;
+  // LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
+  //<< "adding between  " << au_bk_pt << " to  " << au_fw_pt
+  //<< AixLog::Color::NONE << std::endl;
 
   copy_audio_to_buffer(&au_bk_pt, &au_fw_pt, audio);
 
@@ -238,7 +260,7 @@ int16_t *next_sample() {
   // Seek for interesting frames while distance between fr_fw_pt and au_bk_pt is
   // lg than 1
 
-  // Block while no new frame 
+  // Block while no new frame
   while (!has_new_frame) {
     usleep(100);
   }
@@ -254,17 +276,29 @@ int16_t *next_sample() {
   double energy = find_next_frame();
 
   // Also super verbose
-  //LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
-             //<< "next sample between - " << fr_bk_pt << " to " << fr_fw_pt
-             //<< " energy " << energy << AixLog::Color::NONE << std::endl;
+  // LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
+  //<< "next sample between - " << fr_bk_pt << " to " << fr_fw_pt
+  //<< " energy " << energy << AixLog::Color::NONE << std::endl;
 
-  if (energy > energy_barrier) {
+  // Also super verbose
+  LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
+             << "mean energy: " << mean_energy
+             << " --- deviation energy: " << deviation_energy << " threshold "
+             << mean_energy + deviations * deviation_energy << " energy "
+             << energy << AixLog::Color::NONE << std::endl;
+
+  mean_energy =
+      mean_energy * (1 - energy_transfer_rate) + energy * energy_transfer_rate;
+  deviation_energy = deviation_energy * (1 - energy_transfer_rate) +
+                     abs(mean_energy - energy) * energy_transfer_rate;
+
+  // Can't let it go too low
+  deviation_energy = std::max(deviation_energy, minimum_deviation_energy);
+
+  if (energy > mean_energy + deviations * deviation_energy) {
     // We have enough energy
 
     copy_buffer_to_audio(&fr_bk_pt, &fr_fw_pt, return_buffer);
-
-    move_ptr_distance(&fr_bk_pt, predict_jump);
-    move_ptr_distance(&fr_fw_pt, predict_jump);
 
     return return_buffer;
   }

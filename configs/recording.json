@@ -1,5 +1,5 @@
 {
   "device": "default",
   "sample_rate": 8000,
-  "frame_length": 1000
+  "frame_length": 500
 }
