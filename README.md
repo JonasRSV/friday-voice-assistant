@@ -19,7 +19,7 @@ Which is Swedish for turn of the light and turn on the lights.
 
 I intend to upload pre-compiled versions with pre-trained models for different platforms, if there exist any interest for it. 
 
-I also intend to try to make it easy to add custom keyword to the underlying keyword spotter. Today, to add custom keywords,  you have to record about 100 samples yourself, it takes less than an hour. But then you have to retrain and all of that and it gets pretty tedious. I hope to make that easier in the future.
+I also intend to try to make it easy to add custom keyword to the underlying keyword spotter. Today, to add custom keywords,  you have to record about 100 samples yourself, it takes less than an hour. But then you have to retrain and all of that and it gets pretty tedious. I hope to make that easier in the future. But if you do want to add custom keywords now, please use this: [Record your own](https://github.com/JonasRSV/friday-voice-assistant/blob/master/friday/audio/keyword_detection/goldfish/docs/preprocessing.md#recording-your-own), it is what I used.
 
 
 ### TOC
