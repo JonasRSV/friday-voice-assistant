@@ -2,7 +2,7 @@ config_setting(
     name="k8-tf-gpu",
     values = {
         "cpu": "k8",
-        "define": "tf=gpu"
+        "define": "platform=linux-x86-gpu"
         }
 )
 
@@ -10,14 +10,14 @@ config_setting(
     name="k8-tf-cpu",
     values = {
         "cpu": "k8",
-        "define": "tf=cpu"
+        "define": "platform=linux-x86-cpu"
     }
 )
 
 config_setting(
     name="arm-pi",
     values = {
-        "define": "platform=pi"
+        "define": "platform=linux-arm-cpu"
     }
 )
 
@@ -37,7 +37,7 @@ cc_library(
          "lib/raspberryPi32/libtensorflow.so", 
          "lib/raspberryPi32/libtensorflow_framework.so"
       ]},
-      no_match_error = "\n(Tensorflow): Pick target using (--define tf=gpu | --define tf=cpu)"
+      no_match_error = "\n\n(Tensorflow): Please define platform with one of (--define platform=linux-x86-cpu | --define platform=linux-x86-gpu | --define platform=linux-arm-cpu)\nYou probably want --define platform=linux-x86-cpu if you're testing on your laptop\n\n"
     ),
     hdrs = [
         "include/tensorflow/c/c_api.h", 

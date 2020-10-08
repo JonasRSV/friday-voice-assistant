@@ -31,18 +31,14 @@ size_t max_predict_delay;
 // The mean energy is a measure of the average energy.
 double mean_energy;
 
-// The deviation energy is a measure of how much the energy is varying.
+// How quickly the mean energy is increased.
+double positive_energy_transfer_rate;
+
+// How quickly the mean energy is decreased.
+double negative_energy_transfer_rate;
+
+// How far above the energy has to be for the inference to be called
 double deviation_energy;
-
-// How quickly the mean and deviation energies are updated given new energy
-// estimates.
-double energy_transfer_rate;
-
-// How many deviations above the mean_energy for the model to react
-double deviations;
-
-// To avoid becoming too sensitive after being quite a long time
-double minimum_deviation_energy;
 
 std::thread *recording_thread;
 
@@ -196,17 +192,16 @@ void setup(nlohmann::json config) {
   // The maximum distance allowed between the fr_bk_pt and au_fw_pt
   max_predict_delay = config::get_required_config<size_t>(
       config, "max_predict_delay", /*tag=*/"replay_buffer");
-  energy_transfer_rate = config::get_optional_config<double>(
-      config, "energy_transfer_rate", /*tag=*/"replay_buffer",
-      /*default=*/0.2);
+  positive_energy_transfer_rate = config::get_optional_config<double>(
+      config, "positive_energy_transfer_rate", /*tag=*/"replay_buffer",
+      /*default=*/0.1);
+  negative_energy_transfer_rate = config::get_optional_config<double>(
+      config, "negative_energy_transfer_rate", /*tag=*/"replay_buffer",
+      /*default=*/0.4);
   mean_energy = config::get_optional_config<double>(
       config, "mean_energy", /*tag=*/"replay_buffer", /*default=*/500);
   deviation_energy = config::get_optional_config<double>(
-      config, "deviation_energy", /*tag=*/"replay_buffer", /*default=*/100);
-  minimum_deviation_energy = config::get_optional_config<double>(
-      config, "minimum_deviation_energy", /*tag=*/"replay_buffer", /*default=*/50);
-  deviations = config::get_optional_config<double>(
-      config, "deviations", /*tag=*/"replay_buffer", /*default=*/1);
+      config, "deviation_energy", /*tag=*/"replay_buffer", /*default=*/200);
 
   fr_bk_pt = 0;
   fr_fw_pt = model_frame_size;
@@ -282,20 +277,23 @@ int16_t *next_sample() {
 
   // Also super verbose
   LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
-             << "mean energy: " << mean_energy
-             << " --- deviation energy: " << deviation_energy << " threshold "
-             << mean_energy + deviations * deviation_energy << " energy "
-             << energy << AixLog::Color::NONE << std::endl;
+             << "mean energy: " << mean_energy << " threshold "
+             << mean_energy + deviation_energy << " energy " << energy
+             << AixLog::Color::NONE << std::endl;
 
-  mean_energy =
-      mean_energy * (1 - energy_transfer_rate) + energy * energy_transfer_rate;
-  deviation_energy = deviation_energy * (1 - energy_transfer_rate) +
-                     abs(mean_energy - energy) * energy_transfer_rate;
+
+  // Update the mean energy
+  if (energy > mean_energy)
+    mean_energy =
+        mean_energy * (1 - positive_energy_transfer_rate) + energy * positive_energy_transfer_rate;
+  else
+    mean_energy =
+        mean_energy * (1 - negative_energy_transfer_rate) + energy * negative_energy_transfer_rate;
+
 
   // Can't let it go too low
-  deviation_energy = std::max(deviation_energy, minimum_deviation_energy);
 
-  if (energy > mean_energy + deviations * deviation_energy) {
+  if (energy > mean_energy + deviation_energy) {
     // We have enough energy
 
     copy_buffer_to_audio(&fr_bk_pt, &fr_fw_pt, return_buffer);

@@ -1,5 +1,4 @@
 #include "../../shared/json.hpp"
-#include <optional>
 #include <string>
 
 namespace keyword_detection {
