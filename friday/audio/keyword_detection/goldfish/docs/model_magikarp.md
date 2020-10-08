@@ -30,6 +30,10 @@ bazel run //friday/audio/keyword_detection/goldfish/models/magikarp:magikarp --\
     --parallel_reads=5
 ```
 
+***If you get obscure errors***
+- Are --num_labels correct? Is it the same as in the label map used to create your data?
+
+
 To Export after training run
 ```bash
 bazel run //friday/audio/keyword_detection/goldfish/models/magikarp:magikarp --\
@@ -40,3 +44,6 @@ bazel run //friday/audio/keyword_detection/goldfish/models/magikarp:magikarp --\
     --num_labels=7
     
 ```
+
+***If you get obscure errors***
+- Are --num_labels correct? Is it the same as in the label map used to create your data?
