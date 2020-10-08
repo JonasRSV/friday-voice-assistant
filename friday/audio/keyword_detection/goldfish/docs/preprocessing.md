@@ -13,7 +13,7 @@ Since we are using tensorflow the data-sources should be converted into a format
 It is the job of a preprocessing pipeline to convert its source into a tfexample with the following fields
 
 ```python3
-# The audio fields are x seconds recordings of mono 16 bit PCM data with a sample_rate of 44.1 kHz
+# The audio fields are x seconds recordings of mono 16 bit PCM data 
 
 audio: int64list # Would be nice with int16 list but tfexample does not support it.. which unfortunately makes the dataset 4x larger.
 text:  byteslist
