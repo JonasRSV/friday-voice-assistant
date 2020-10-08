@@ -126,7 +126,11 @@ bazel run //friday/audio/keyword_detection/goldfish/preprocessing:google_speech_
 
 ### Recording your own
 
-This assumes GOLDFISH_DIRECTORY is set
+This assumes GOLDFISH_DIRECTORY is set, replace --text with the text you will be saying.
+
+Once the program starts, you press enter then you have 'clip_length' e.g 2 seconds time to speak the text. After you have spoken it will be
+repeated to you. Then press enter when you're ready to speak the same text again and repeat. Each time you press enter it will record for 2 seconds then play it back.
+Once you're done, do one keyboard interrupt and it will save your recordings into a format that can be run in the [Pipeline](#pipeline).
 
 ```bash
 bazel run //friday/audio/keyword_detection/goldfish/preprocessing:record_personal_examples --\
@@ -136,6 +140,8 @@ bazel run //friday/audio/keyword_detection/goldfish/preprocessing:record_persona
     --text="[UNK]"
 
 ```
+
+
 
 ### Cleaning Goldfish Voice data
 
@@ -157,6 +163,8 @@ bazel run //friday/audio/keyword_detection/goldfish/preprocessing:preprocess_gol
   --in_memory_files=20
 ```
 
+After this pipeline run the splitting
+
 #### Splitting
 
 The train_valid_split pipeline creates one train and one validation split.
@@ -168,3 +176,5 @@ bazel run //friday/audio/keyword_detection/goldfish/preprocessing:train_valid_sp
  --examples_per_shard=100\
  --train_fraction=0.8
 ```
+
+Once this is done you can train a model, see e.g [magikarp](https://github.com/JonasRSV/friday-voice-assistant/blob/master/friday/audio/keyword_detection/goldfish/docs/model_magikarp.md)
