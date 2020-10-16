@@ -22,7 +22,7 @@ void set_logging(int logging_level) {
   }
 
   AixLog::Log::init<AixLog::SinkCout>(logging_severity,
-                                      "[#severity] (#tag) #message");
+                                      "%Y-%m-%d %H-%M-%S.#ms [#severity] (#tag) #message");
 
   LOG(INFO) << TAG("launch") << AixLog::Color::YELLOW << "Log-Level set to "
             << log_level_description << AixLog::Color::NONE << std::endl;

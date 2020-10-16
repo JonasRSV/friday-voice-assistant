@@ -276,10 +276,10 @@ int16_t *next_sample() {
   //<< " energy " << energy << AixLog::Color::NONE << std::endl;
 
   // Also super verbose
-  LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
-             << "mean energy: " << mean_energy << " threshold "
-             << mean_energy + deviation_energy << " energy " << energy
-             << AixLog::Color::NONE << std::endl;
+  //LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
+             //<< "mean energy: " << mean_energy << " threshold "
+             //<< mean_energy + deviation_energy << " energy " << energy
+             //<< AixLog::Color::NONE << std::endl;
 
 
   // Update the mean energy

@@ -30,13 +30,13 @@ void set_hue_state(std::string username, nlohmann::json states) {
       // TODO(jonasrsv): Better string formatting
       std::string path = "/api/" + username + "/lights/" + hue_id + "/state";
 
-      LOG(DEBUG) << TAG("philips hue set") << "Setting " << AixLog::Color::GREEN
+      LOG(DEBUG) << TAG("philips-hue") << "Setting " << AixLog::Color::GREEN
                  << hue_id << AixLog::Color::NONE << " at "
                  << AixLog::Color::YELLOW << path << AixLog::Color::NONE
                  << " to " << hue_state << std::endl;
       cli->Put(path.c_str(), hue_state, "application/json");
     } else {
-      LOG(WARNING) << TAG("philips hue") << AixLog::Color::RED
+      LOG(WARNING) << TAG("philips-hue") << AixLog::Color::RED
                    << "Unknown Request type: " << type << AixLog::Color::NONE
                    << std::endl;
     }
@@ -53,25 +53,25 @@ void setup(nlohmann::json config) {
   commands = config::get_required_config<nlohmann::json>(config, "commands",
                                                          "philips_hue");
 
-  LOG(DEBUG) << TAG("philips hue setup") << AixLog::Color::YELLOW
+  LOG(DEBUG) << TAG("philips-hue") << AixLog::Color::YELLOW
              << "Starting http client -- ipaddr: " << ipaddr
              << " port: " << port << AixLog::Color::NONE << std::endl;
 
   cli = new httplib::Client(ipaddr, port);
 
-  LOG(INFO) << TAG("philips hue setup") << AixLog::Color::GREEN << "Success"
+  LOG(INFO) << TAG("philips-hue") << AixLog::Color::GREEN << "Success"
             << AixLog::Color::NONE << std::endl;
 }
 
 void dispatch(std::string command) {
   if (commands.contains(command)) {
-    LOG(INFO) << TAG("philips hue dispatch") << AixLog::Color::YELLOW
-              << "Executing " << AixLog::Color::GREEN << command
-              << AixLog::Color::NONE << std::endl;
+    LOG(INFO) << TAG("philips-hue") << AixLog::Color::YELLOW << "Executing "
+              << AixLog::Color::GREEN << command << AixLog::Color::NONE
+              << std::endl;
 
     set_hue_state(username, commands[command]);
   } else {
-    LOG(DEBUG) << TAG("philips hue dispatch")
+    LOG(DEBUG) << TAG("philips-hue")
                << "Unknown command: " << AixLog::Color::YELLOW << command
                << AixLog::Color::NONE << std::endl;
   }

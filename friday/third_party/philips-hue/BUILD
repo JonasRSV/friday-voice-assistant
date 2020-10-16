@@ -10,6 +10,7 @@ cc_library(
     ],
     visibility = [
         "//friday:__pkg__",
+        "//friday/dispatch:__pkg__",
     ],
 )
 

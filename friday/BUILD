@@ -10,6 +10,8 @@ cc_binary(
         "//friday/audio/keyword_detection:keyword_detection_library",
         "//friday/setup:friday_options_library",
         "//friday/shared:logging",
+        "//friday/dispatch:dispatch_library",
+        "//friday/dispatch:local_library",
         "//friday/third_party/philips-hue:philips_hue_library",
     ],
     linkopts =["-pthread"]
