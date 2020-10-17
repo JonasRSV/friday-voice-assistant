@@ -9,3 +9,4 @@ friday/audio/keyword_detection/goldfish/tf/tensorflow/lib/raspberryPi32/libtenso
 friday/audio/keyword_detection/goldfish/tf/tensorflow/lib/rock64/libtensorflow*
 .idea/
 configs/philips_hue.json
+distributions

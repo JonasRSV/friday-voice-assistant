@@ -8,12 +8,27 @@ cc_library(
         "//friday/shared:logging",
         "//friday/shared:json",
         "//friday/shared:config_library",
+        ":speak_detection_library",
     ],
     visibility = [
         "//friday:__pkg__",
         "//friday/audio/keyword_detection:__pkg__",
     ],
     linkopts =["-pthread"]
+)
+
+cc_library(
+    name = "speak_detection_library",
+    srcs = ["speak_detection.cc"],
+    hdrs = ["speak_detection.hpp"],
+    deps = [
+        "//friday/shared:logging",
+        "//friday/shared:json",
+        "//friday/shared:config_library",
+    ],
+    visibility = [
+        "//friday:__pkg__",
+    ],
 )
 
 cc_test(

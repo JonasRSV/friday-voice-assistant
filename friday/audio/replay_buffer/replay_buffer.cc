@@ -2,12 +2,17 @@
 #include "../../shared/config.hpp"
 #include "../recording/recording.hpp"
 #include "replay_buffer.hpp"
+#include "speak_detection.hpp"
+#include <atomic>
+#include <chrono>
 #include <thread>
 
 namespace replay_buffer {
 std::string config() { return "replay_buffer"; }
 
 namespace {
+
+#define SECONDS(x) (long long)(x * 1000000)
 
 // Buffer we store all audio in
 size_t buffer_size;
@@ -25,25 +30,11 @@ size_t au_fw_pt;
 size_t model_frame_size;
 size_t audio_frame_size;
 
-// How far behind the frame pointers can be the audio pointers
-size_t max_predict_delay;
-
-// The mean energy is a measure of the average energy.
-double mean_energy;
-
-// How quickly the mean energy is increased.
-double positive_energy_transfer_rate;
-
-// How quickly the mean energy is decreased.
-double negative_energy_transfer_rate;
-
-// How far above the energy has to be for the inference to be called
-double deviation_energy;
-
 std::thread *recording_thread;
 
 // If the audio thread has added a new frame
-volatile bool has_new_frame = false;
+std::atomic_bool has_new_frame(false);
+std::atomic_bool run_listen(true);
 
 void move_ptr_distance(size_t *ptr, size_t distance) {
   *ptr = (*ptr + distance) % buffer_size;
@@ -96,74 +87,33 @@ void copy_buffer_to_audio(size_t *a, size_t *b, int16_t *audio_buffer) {
   }
 }
 
-void ensure_frame_pointers_are_in_ok_position() {
-  // This ensures that the frame_pointers is in a valid position
-  // This currently means that they are not too far away form the audio pointers
-
-  // Ensure that the frame back pointer is at most "max_predict_delay" distance
-  // from audio forward pointer
+// Function for moving frame_pointers to next audio frame
+void update_frame_pointers() {
+  // First we calculate how long our update jump is
   size_t d = distance_between_ptr(&fr_fw_pt, &au_bk_pt);
 
-  // If distance is to large, move frame to within range.
-  if (d > max_predict_delay) {
-    size_t distance_to_move = d - max_predict_delay;
+  // Then we slide across our audio to update the speak_detection state
+  // and put frame_pointers in correct place
+  // We only slide to d - 1 because that is the newest sample.
+  for (size_t i = 0; i < d - 1; i++) {
+    int16_t dropped_sample = buffer[fr_bk_pt];
 
-    move_ptr_distance(&fr_bk_pt, distance_to_move);
-    move_ptr_distance(&fr_fw_pt, distance_to_move);
-  }
-
-  d = distance_between_ptr(&fr_bk_pt, &au_bk_pt);
-}
-double find_next_frame() {
-  // Get the frame that has the highest energy
-
-  // First calculate energy of current frame
-  long long energy = 0;
-  size_t ptr = fr_bk_pt;
-  while (distance_between_ptr(&ptr, &fr_fw_pt) > 0) {
-
-    energy += ((long long)buffer[ptr] * (long long)buffer[ptr]);
-    move_ptr_distance(&ptr, 1);
-  }
-
-  // Remember the best ptrs and energy
-  size_t best_bk_ptr = fr_bk_pt, best_fw_ptr = fr_fw_pt;
-  long long best_energy = energy;
-  // While fr is behind audio, we seek
-  while (distance_between_ptr(&fr_fw_pt, &au_bk_pt) > 1) {
-    // Increment ptrs
     move_ptr_distance(&fr_bk_pt, 1);
     move_ptr_distance(&fr_fw_pt, 1);
 
-    // Add the energy from the new signal
-    energy += ((long long)buffer[fr_fw_pt] * (long long)buffer[fr_fw_pt]);
-
-    // Remove the energy from old signal
-    energy -= ((long long)buffer[fr_bk_pt] * (long long)buffer[fr_bk_pt]);
-
-    // if energy is larger, return it
-    if (energy > best_energy) {
-      best_energy = energy;
-      best_bk_ptr = fr_bk_pt;
-      best_fw_ptr = fr_fw_pt;
-    }
+    speak_detection::slide(/*dropped_sample=*/dropped_sample,
+                           /*added_sample=*/buffer[fr_fw_pt]);
   }
-
-  // Set fw ptrs to the best ptrs and return energy
-  fr_bk_pt = best_bk_ptr;
-  fr_fw_pt = best_fw_ptr;
-
-  return sqrt((double)best_energy / (double)model_frame_size);
 }
 
 void listen() {
   // Read a few frames because the first audio seems to be garbled
   size_t frame_size = recording::frame_size();
   size_t sample_rate = recording::sample_rate();
-  LOG(INFO) << TAG("replay_buffer") << AixLog::Color::GREEN
-            << "Starting audio recording -- frame_size: " << frame_size
-            << " -- sample_rate: " << sample_rate << AixLog::Color::NONE
-            << std::endl;
+  // LOG(INFO) << TAG("replay_buffer") << AixLog::Color::GREEN
+  //<< "Starting audio recording -- frame_size: " << frame_size
+  //<< " -- sample_rate: " << sample_rate << AixLog::Color::NONE
+  //<< std::endl;
 
   // We forget some frames because audio in the beginning of recording is
   // sometimes garbled, for some reason.
@@ -171,12 +121,30 @@ void listen() {
   for (int i = 0; i < frames_to_forget; i++)
     recording::get_next_audio_frame();
 
-  while (true) {
+  while (run_listen) {
     int16_t *pcm = recording::get_next_audio_frame();
+    //LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
+               //<< "Read New Frame " << index.fetch_add(1) << AixLog::Color::NONE
+               //<< std::endl;
     replay_buffer::add(pcm, frame_size);
   }
 }
 } // namespace
+
+void add(int16_t *audio, size_t size) {
+  // This is super verbose
+  // LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
+  //<< "adding between  " << au_bk_pt << " to  " << au_fw_pt
+  //<< AixLog::Color::NONE << std::endl;
+
+  copy_audio_to_buffer(&au_bk_pt, &au_fw_pt, audio);
+
+  move_ptr_distance(&au_bk_pt, size);
+  move_ptr_distance(&au_fw_pt, size);
+
+  has_new_frame = true;
+  // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+}
 
 void setup(nlohmann::json config) {
   buffer_size = config::get_required_config<size_t>(config, "buffer_size",
@@ -188,20 +156,6 @@ void setup(nlohmann::json config) {
 
   // Frame size recorded by alsa
   audio_frame_size = recording::frame_size();
-
-  // The maximum distance allowed between the fr_bk_pt and au_fw_pt
-  max_predict_delay = config::get_required_config<size_t>(
-      config, "max_predict_delay", /*tag=*/"replay_buffer");
-  positive_energy_transfer_rate = config::get_optional_config<double>(
-      config, "positive_energy_transfer_rate", /*tag=*/"replay_buffer",
-      /*default=*/0.1);
-  negative_energy_transfer_rate = config::get_optional_config<double>(
-      config, "negative_energy_transfer_rate", /*tag=*/"replay_buffer",
-      /*default=*/0.4);
-  mean_energy = config::get_optional_config<double>(
-      config, "mean_energy", /*tag=*/"replay_buffer", /*default=*/500);
-  deviation_energy = config::get_optional_config<double>(
-      config, "deviation_energy", /*tag=*/"replay_buffer", /*default=*/200);
 
   fr_bk_pt = 0;
   fr_fw_pt = model_frame_size;
@@ -223,20 +177,6 @@ void purge() {
   au_fw_pt = audio_frame_size;
 }
 
-void add(int16_t *audio, size_t size) {
-  // This is super verbose
-  // LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
-  //<< "adding between  " << au_bk_pt << " to  " << au_fw_pt
-  //<< AixLog::Color::NONE << std::endl;
-
-  copy_audio_to_buffer(&au_bk_pt, &au_fw_pt, audio);
-
-  move_ptr_distance(&au_bk_pt, size);
-  move_ptr_distance(&au_fw_pt, size);
-
-  has_new_frame = true;
-}
-
 void clear() {
   if (buffer) {
     delete[] buffer;
@@ -246,62 +186,53 @@ void clear() {
     delete[] return_buffer;
   }
 
+  run_listen = false;
+
+  recording_thread->join();
+
   if (recording_thread) {
     delete recording_thread;
   }
 }
 
+bool speaker_detection_initialized = false;
+
 int16_t *next_sample() {
-  // Seek for interesting frames while distance between fr_fw_pt and au_bk_pt is
-  // lg than 1
+  // Block until we find a sample
+  while (true) {
+    while (!has_new_frame) {
+      std::this_thread::sleep_for(std::chrono::microseconds(100));
+    }
 
-  // Block while no new frame
-  while (!has_new_frame) {
-    usleep(100);
+    //LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
+               //<< "Got new Frame " << index.fetch_add(1) << AixLog::Color::NONE
+               //<< std::endl;
+
+    // Need to initialize speak_detection with first frame
+    if (!speaker_detection_initialized) {
+      // Initialize speaker identification with initial audio
+      speak_detection::initialize(buffer, model_frame_size);
+      speaker_detection_initialized = true;
+    }
+
+    has_new_frame = false;
+
+    // Say that current frame is no longer new
+
+    // This moves the frame_pointers to the new audio frame
+    update_frame_pointers();
+
+    // We check if the current frame has a speaker in it
+    if (speak_detection::has_speaker()) {
+      //std::cout << "Got here" << std::endl;
+
+      // We copy the content between our frame_pointers into the return_buffer
+      // for prediction.
+      copy_buffer_to_audio(&fr_bk_pt, &fr_fw_pt, return_buffer);
+
+      return return_buffer;
+    }
   }
-
-  // Say that current frame is no longer new
-  has_new_frame = false;
-
-  // This makes sure the fr_ptrs are in a valid position
-  ensure_frame_pointers_are_in_ok_position();
-
-  // This updates the fr_ptrs to the frame with highest energy, and returns that
-  // frame.
-  double energy = find_next_frame();
-
-  // Also super verbose
-  // LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
-  //<< "next sample between - " << fr_bk_pt << " to " << fr_fw_pt
-  //<< " energy " << energy << AixLog::Color::NONE << std::endl;
-
-  // Also super verbose
-  //LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
-             //<< "mean energy: " << mean_energy << " threshold "
-             //<< mean_energy + deviation_energy << " energy " << energy
-             //<< AixLog::Color::NONE << std::endl;
-
-
-  // Update the mean energy
-  if (energy > mean_energy)
-    mean_energy =
-        mean_energy * (1 - positive_energy_transfer_rate) + energy * positive_energy_transfer_rate;
-  else
-    mean_energy =
-        mean_energy * (1 - negative_energy_transfer_rate) + energy * negative_energy_transfer_rate;
-
-
-  // Can't let it go too low
-
-  if (energy > mean_energy + deviation_energy) {
-    // We have enough energy
-
-    copy_buffer_to_audio(&fr_bk_pt, &fr_fw_pt, return_buffer);
-
-    return return_buffer;
-  }
-
-  return nullptr;
 }
 size_t frame_size() { return model_frame_size; }
 

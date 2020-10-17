@@ -117,7 +117,7 @@ int16_t *get_next_audio_frame(void) {
     log_error_exit("read audio", "'snd_pcm_readi' failed with",
                    snd_strerror(count));
   } else if (count != alsa_frame_length) {
-    LOG(FATAL) << TAG("getting audio frame") << AixLog::Color::RED << "read "
+    LOG(FATAL) << TAG("recording") << AixLog::Color::RED << "read "
                << count << " frames instead of " << alsa_frame_length
                << AixLog::Color::NONE << std::endl;
     exit(1);

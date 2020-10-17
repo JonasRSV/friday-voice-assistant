@@ -3,39 +3,44 @@
 #include "audio/playback/playback.hpp"
 #include "audio/recording/recording.hpp"
 #include "audio/replay_buffer/replay_buffer.hpp"
+#include "audio/replay_buffer/speak_detection.hpp"
 #include "dispatch/dispatch.hpp"
 #include "dispatch/local.hpp"
 #include "setup/friday_options.hpp"
 #include "shared/aixlog.hpp"
 #include "third_party/philips-hue/philips_hue.hpp"
+#include <chrono>
 #include <signal.h>
 #include <stdio.h>
-#include <unistd.h>
-
-#define SECONDS(x) (long long)(x * 1000000)
 
 nlohmann::json get_config(launch::options *opt, std::string name) {
   if (opt->configs.find(name) != opt->configs.end()) {
     return opt->configs[name];
   }
 
-  LOG(FATAL) << TAG("main") << AixLog::Color::RED << "Required config: '"
-             << name
+  LOG(DEBUG) << TAG("main") << AixLog::Color::RED << "Config: '" << name
              << "' not found -- please make sure there is a json file of that "
-                "name in the config directory"
+                "name in the config directory, otherwise I assume it is empty"
              << AixLog::Color::NONE << std::endl;
-  exit(1);
+
+  return nlohmann::json();
 }
 
 void global_setup(launch::options *opt) {
+  // The order of these setups matter
+
   goldfish::setup(get_config(opt, goldfish::config()));
   recording::setup(get_config(opt, recording::config()));
-  replay_buffer::setup(get_config(opt, replay_buffer::config()));
-  keyword_detection::setup(get_config(opt, keyword_detection::config()));
   playback::setup(get_config(opt, playback::config()));
+
+  keyword_detection::setup(get_config(opt, keyword_detection::config()));
   philips_hue::setup(get_config(opt, philips_hue::config()));
   local::setup(get_config(opt, local::config()));
   dispatch::setup(get_config(opt, dispatch::config()));
+
+  // First replay then speaker
+  replay_buffer::setup(get_config(opt, replay_buffer::config()));
+  speak_detection::setup(get_config(opt, speak_detection::config()));
 }
 
 void global_cleanup() {
@@ -64,12 +69,6 @@ int main(int argc, const char *argv[]) {
   // Setup all modules
   global_setup(opt);
 
-  LOG(INFO) << TAG("main") << AixLog::Color::GREEN << "Purging audio buffer.. "
-            << AixLog::Color::NONE << std::endl;
-
-  // to let replay_buffer recording get started
-  usleep(SECONDS(2));
-
   LOG(INFO) << TAG("main") << AixLog::Color::GREEN << "Starting to listen.. "
             << AixLog::Color::NONE << std::endl;
 
@@ -83,7 +82,8 @@ int main(int argc, const char *argv[]) {
     // Dispatches it to execute its commands
     dispatch::dispatch(prediction);
 
-    usleep(SECONDS(2.0));
+    // Sleep to clear buffer
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
   }
 
   return 0;

@@ -19,7 +19,7 @@ void dispatch_all(std::string keyword) {
              << "Dispatching to local: " << keyword << AixLog::Color::NONE
              << std::endl;
   local::dispatch(keyword);
-  LOG(DEBUG) << TAG("dispatch") << AixLog::Color::YELLOW << "Dispatching '" << keyword << "' complete"
+  LOG(INFO) << TAG("dispatch") << AixLog::Color::MAGENTA << "Dispatching '" << keyword << "' complete"
              << AixLog::Color::NONE << std::endl;
 }
 } // namespace

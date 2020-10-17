@@ -1,5 +1,4 @@
 {
     "buffer_size": 80000,
-    "frame_size": 16000,
-    "max_predict_delay": 200
+    "frame_size": 16000
 }

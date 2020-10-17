@@ -133,11 +133,13 @@ repeated to you. Then press enter when you're ready to speak the same text again
 Once you're done, do one keyboard interrupt and it will save your recordings into a format that can be run in the [Pipeline](#pipeline).
 
 ```bash
+TEXT="godmorgon"
+
 bazel run //friday/audio/keyword_detection/goldfish/preprocessing:record_personal_examples --\
     --file_prefix=${GOLDFISH_DIRECTORY?}/tfexamples\
     --sample_rate=8000\
     --clip_length=2.0\
-    --text="[UNK]"
+    --text={TEXT?}
 
 ```
 
