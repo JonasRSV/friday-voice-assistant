@@ -5,5 +5,7 @@
   "off": 3,
   "on": 4,
   "happy": 5,
-  "wow": 6
+  "wow": 6,
+  "right": 7,
+  "left": 8
 }

@@ -26,7 +26,7 @@ http_archive(
     ],
 )
 
-load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
-tf_workspace(path_prefix = "", tf_repo_name = "org_tensorflow")
+#load("@org_tensorflow//tensorflow:workspace.bzl", "tf_workspace")
+#tf_workspace(path_prefix = "", tf_repo_name = "org_tensorflow")
 
 

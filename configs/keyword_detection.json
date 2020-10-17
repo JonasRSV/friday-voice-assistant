@@ -1,4 +1,4 @@
 {
   "label_map_path": "friday/audio/keyword_detection/goldfish/configs/kombination.json",
-  "certainty_barrier": 0.95
+  "certainty_barrier": 0.80
 }
