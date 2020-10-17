@@ -139,10 +139,19 @@ bazel run //friday/audio/keyword_detection/goldfish/preprocessing:record_persona
     --file_prefix=${GOLDFISH_DIRECTORY?}/tfexamples\
     --sample_rate=8000\
     --clip_length=2.0\
-    --text={TEXT?}
+    --text=${TEXT?}
 
 ```
 
+Recording background noise
+```bash
+bazel run //friday/audio/keyword_detection/goldfish/preprocessing:record_personal_examples --\
+    --file_prefix=${GOLDFISH_DIRECTORY?}/tfexamples\
+    --sample_rate=8000\
+    --clip_length=2.0\
+    --text=""\
+    --background="[UNK]"
+```
 
 
 ### Cleaning Goldfish Voice data
