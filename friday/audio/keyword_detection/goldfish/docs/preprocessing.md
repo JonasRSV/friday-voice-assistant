@@ -153,6 +153,19 @@ bazel run //friday/audio/keyword_detection/goldfish/preprocessing:record_persona
     --background="[UNK]"
 ```
 
+### Manually filtering a record
+
+If you when for example recorded your own data made a mistake and said the wrong word, you can use this to
+drop examples from the record.
+
+```bash
+INPUT_FILE=...
+OUTPUT_FILE=...
+
+bazel run //friday/audio/keyword_detection/goldfish/preprocessing:manually_filter_records -- \
+ --input_file=${GOLDFISH_DIRECTORY?}/${INPUT_FILE} \
+ --output_file=${GOLDFISH_DIRECTORY?}/${OUTPUT_FILE}
+```
 
 ### Cleaning Goldfish Voice data
 

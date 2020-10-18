@@ -54,7 +54,7 @@ void setup(nlohmann::json config) {
       config, "deviation_energy", /*tag=*/"speak_detection", /*default=*/30);
 
   time_delay = config::get_optional_config<int>(
-      config, "time_delay ms", /*tag=*/"speak_detection", /*default=*/1300);
+      config, "time_delay ms", /*tag=*/"speak_detection", /*default=*/1000);
 }
 
 auto timestamp = std::chrono::steady_clock::now();

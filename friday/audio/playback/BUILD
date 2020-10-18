@@ -22,6 +22,7 @@ cc_test(
     deps = [
         "//friday/audio/recording:recording_library",
         "//friday/testing:testing_library",
+        "//friday/audio/filter:filter_library",
         ":playback_library",
     ],
 )

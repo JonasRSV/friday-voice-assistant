@@ -11,6 +11,7 @@ import simpleaudio
 tf.compat.v1.enable_eager_execution()
 
 
+
 def record_audio(file_prefix: str, clip_length: float, sample_rate: int, text: str):
     suffix = random.randint(0, 10000000)
     file_name = f"{file_prefix}.personal.{suffix}"
@@ -103,7 +104,15 @@ if __name__ == "__main__":
                         help="text assumed to be in each recording",
                         default=False)
 
+    parser.add_argument("--device",
+                        type=str,
+                        help="Device to use for recording")
+
     args = parser.parse_args()
+
+    if args.device:
+        sounddevice.default.device = args.device
+
     if args.background:
         record_background(file_prefix=args.file_prefix,
                           clip_length=args.clip_length,

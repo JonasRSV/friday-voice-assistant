@@ -37,6 +37,14 @@ py_binary(name="record_personal_examples",
           python_version="PY3",
 )
 
+py_binary(name="manually_filter_records",
+          srcs=["manually_filter_records.py"],
+          deps=[
+              "//friday/audio/keyword_detection/goldfish/shared:goldfish_utils",
+          ],
+          python_version="PY3",
+)
+
 cc_binary(
           name="data_pipeline",
           srcs=[
