@@ -104,46 +104,48 @@ std::string prediction() {
     // Blocks until we get a new frame
     int16_t *predict_frame = replay_buffer::next_sample();
 
+    std::cout << "Predicting" << std::endl;
 
-    pred = goldfish::predict(predict_frame, frame_size);
-    prediction = argmax(pred.probabilities.data());
 
-    LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
-               << "probabilities: " << pred.probabilities
-               << AixLog::Color::NONE << std::endl;
+    //pred = goldfish::predict(predict_frame, frame_size);
+    //prediction = argmax(pred.probabilities.data());
 
-    if (prediction != 0) {
-      std::cout << "Picked " << std::endl;
-      playback::play_audio_frame(predict_frame, 16000, 8000);
-      usleep(SECONDS(5.0));
+    //LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
+    //           << "probabilities: " << pred.probabilities
+    //           << AixLog::Color::NONE << std::endl;
 
-      float certainty = max(pred.probabilities.data());
+    //if (prediction != 0) {
+    //  std::cout << "Picked " << std::endl;
+    //  playback::play_audio_frame(predict_frame, 16000, 8000);
+    //  usleep(SECONDS(5.0));
 
-      LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
-                 << "buffer_choice: " << prediction
-                 << " name: " << index_to_name[std::to_string(prediction)]
-                 << " certainty: " << certainty << AixLog::Color::NONE
-                 << std::endl;
+    //  float certainty = max(pred.probabilities.data());
 
-       //std::cout << "Picked " << std::endl;
-       //playback::play_audio_frame(predict_frame, 16000, 8000);
-       //usleep(SECONDS(5.0));
+    //  LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
+    //             << "buffer_choice: " << prediction
+    //             << " name: " << index_to_name[std::to_string(prediction)]
+    //             << " certainty: " << certainty << AixLog::Color::NONE
+    //             << std::endl;
 
-      // If we are certain enough we make a prediction
-      if (max(pred.probabilities.data()) > certainty_barrier) {
-         //std::cout << "Picked " << std::endl;
-         //playback::play_audio_frame(predict_frame, 16000, 8000);
-         //usleep(SECONDS(5.0));
+    //   //std::cout << "Picked " << std::endl;
+    //   //playback::play_audio_frame(predict_frame, 16000, 8000);
+    //   //usleep(SECONDS(5.0));
 
-        return index_to_name[std::to_string(prediction)];
-      } else {
-        LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::CYAN
-                   << "best guess is "
-                   << index_to_name[std::to_string(prediction)]
-                   << " certainty: " << certainty << AixLog::Color::NONE
-                   << std::endl;
-      }
-    }
+    //  // If we are certain enough we make a prediction
+    //  if (max(pred.probabilities.data()) > certainty_barrier) {
+    //     //std::cout << "Picked " << std::endl;
+    //     //playback::play_audio_frame(predict_frame, 16000, 8000);
+    //     //usleep(SECONDS(5.0));
+
+    //    return index_to_name[std::to_string(prediction)];
+    //  } else {
+    //    LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::CYAN
+    //               << "best guess is "
+    //               << index_to_name[std::to_string(prediction)]
+    //               << " certainty: " << certainty << AixLog::Color::NONE
+    //               << std::endl;
+    //  }
+    //}
   }
 }
 
