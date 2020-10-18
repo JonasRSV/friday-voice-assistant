@@ -104,12 +104,8 @@ std::string prediction() {
     // Blocks until we get a new frame
     int16_t *predict_frame = replay_buffer::next_sample();
 
-    std::cout << "Predicting" << std::endl;
-
-
-    int16_t *frame_copy = (int16_t*)malloc(sizeof(int16_t) * 16000);
-    memcpy(frame_copy, predict_frame, sizeof(int16_t) * 16000);
-    pred = goldfish::predict(frame_copy, frame_size);
+    pred = goldfish::predict(predict_frame, frame_size);
+    std::cout << "pred" << std::endl;
     // prediction = argmax(pred.probabilities.data());
 
     //LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW

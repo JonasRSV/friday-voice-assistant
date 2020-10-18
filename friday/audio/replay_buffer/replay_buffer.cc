@@ -100,9 +100,6 @@ void update_frame_pointers() {
 
     move_ptr_distance(&fr_bk_pt, 1);
     move_ptr_distance(&fr_fw_pt, 1);
-
-    speak_detection::slide(/*dropped_sample=*/dropped_sample,
-                           /*added_sample=*/buffer[fr_fw_pt]);
   }
 }
 
@@ -123,9 +120,9 @@ void listen() {
 
   while (run_listen) {
     int16_t *pcm = recording::get_next_audio_frame();
-    //LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
-               //<< "Read New Frame " << index.fetch_add(1) << AixLog::Color::NONE
-               //<< std::endl;
+    // LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
+    //<< "Read New Frame " << index.fetch_add(1) << AixLog::Color::NONE
+    //<< std::endl;
     replay_buffer::add(pcm, frame_size);
   }
 }
@@ -204,9 +201,9 @@ int16_t *next_sample() {
       std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
 
-    //LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
-               //<< "Got new Frame " << index.fetch_add(1) << AixLog::Color::NONE
-               //<< std::endl;
+    // LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
+    //<< "Got new Frame " << index.fetch_add(1) << AixLog::Color::NONE
+    //<< std::endl;
 
     // Need to initialize speak_detection with first frame
     if (!speaker_detection_initialized) {
@@ -222,14 +219,11 @@ int16_t *next_sample() {
     // This moves the frame_pointers to the new audio frame
     update_frame_pointers();
 
+    // We copy the content between our frame_pointers into the return_buffer
+    copy_buffer_to_audio(&fr_bk_pt, &fr_fw_pt, return_buffer);
+
     // We check if the current frame has a speaker in it
-    if (speak_detection::has_speaker()) {
-      //std::cout << "Got here" << std::endl;
-
-      // We copy the content between our frame_pointers into the return_buffer
-      // for prediction.
-      copy_buffer_to_audio(&fr_bk_pt, &fr_fw_pt, return_buffer);
-
+    if (speak_detection::has_speaker(return_buffer, model_frame_size)) {
       return return_buffer;
     }
   }
