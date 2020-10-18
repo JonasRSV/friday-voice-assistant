@@ -19,7 +19,7 @@ void initialize(int16_t *buffer, size_t buffer_size);
 void slide(int16_t dropped_sample, int16_t added_sample);
 
 // Returns true if a speaker is detected in the current frame
-bool has_speaker(int16_t *signal, size_t size);
+bool has_speaker();
 
 // Clear any resources used by speak_detection
 void clear();

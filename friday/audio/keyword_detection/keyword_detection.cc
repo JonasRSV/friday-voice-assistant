@@ -106,44 +106,47 @@ std::string prediction() {
 
     pred = goldfish::predict(predict_frame, frame_size);
     std::cout << "pred" << std::endl;
-    // prediction = argmax(pred.probabilities.data());
+    prediction = argmax(pred.probabilities.data());
 
-    //LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
-    //           << "probabilities: " << pred.probabilities
-    //           << AixLog::Color::NONE << std::endl;
+    LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
+               << "probabilities: " << pred.probabilities
+               << AixLog::Color::NONE << std::endl;
 
-    //if (prediction != 0) {
-    //  std::cout << "Picked " << std::endl;
-    //  playback::play_audio_frame(predict_frame, 16000, 8000);
-    //  usleep(SECONDS(5.0));
+    if (prediction != 0) {
+      //std::cout << "Picked " << std::endl;
+      //playback::play_audio_frame(predict_frame, 16000, 8000);
+      //usleep(SECONDS(5.0));
 
-    //  float certainty = max(pred.probabilities.data());
+      float certainty = max(pred.probabilities.data());
 
-    //  LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
-    //             << "buffer_choice: " << prediction
-    //             << " name: " << index_to_name[std::to_string(prediction)]
-    //             << " certainty: " << certainty << AixLog::Color::NONE
-    //             << std::endl;
+      LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
+                 << "buffer_choice: " << prediction
+                 << " name: " << index_to_name[std::to_string(prediction)]
+                 << " certainty: " << certainty << AixLog::Color::NONE
+                 << std::endl;
 
-    //   //std::cout << "Picked " << std::endl;
-    //   //playback::play_audio_frame(predict_frame, 16000, 8000);
-    //   //usleep(SECONDS(5.0));
+       //std::cout << "Picked " << std::endl;
+       //playback::play_audio_frame(predict_frame, 16000, 8000);
+       //usleep(SECONDS(5.0));
 
-    //  // If we are certain enough we make a prediction
-    //  if (max(pred.probabilities.data()) > certainty_barrier) {
-    //     //std::cout << "Picked " << std::endl;
-    //     //playback::play_audio_frame(predict_frame, 16000, 8000);
-    //     //usleep(SECONDS(5.0));
+      // If we are certain enough we make a prediction
+      if (max(pred.probabilities.data()) > certainty_barrier) {
+         //std::cout << "Picked " << std::endl;
+         //playback::play_audio_frame(predict_frame, 16000, 8000);
+         //usleep(SECONDS(5.0));
 
-    //    return index_to_name[std::to_string(prediction)];
-    //  } else {
-    //    LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::CYAN
-    //               << "best guess is "
-    //               << index_to_name[std::to_string(prediction)]
-    //               << " certainty: " << certainty << AixLog::Color::NONE
-    //               << std::endl;
-    //  }
-    //}
+        return index_to_name[std::to_string(prediction)];
+      } else {
+        LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::CYAN
+                   << "best guess is "
+                   << index_to_name[std::to_string(prediction)]
+                   << " certainty: " << certainty << AixLog::Color::NONE
+                   << std::endl;
+      }
+    }
+
+    // Bootstrap fix for raspberry-pi bug
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
   }
 }
 

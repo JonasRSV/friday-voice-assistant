@@ -37,8 +37,8 @@ void initialize(int16_t *buffer, size_t buffer_size) {
 }
 
 void slide(int16_t dropped_sample, int16_t added_sample) {
-  //energy -= sqrt((double)(dropped_sample * dropped_sample));
-  //energy += sqrt((double)(added_sample * added_sample));
+  energy -= sqrt((double)(dropped_sample * dropped_sample));
+  energy += sqrt((double)(added_sample * added_sample));
 }
 
 void setup(nlohmann::json config) {
@@ -54,18 +54,13 @@ void setup(nlohmann::json config) {
       config, "deviation_energy", /*tag=*/"speak_detection", /*default=*/5);
 
   time_delay = config::get_optional_config<int>(
-      config, "time_delay ms", /*tag=*/"speak_detection", /*default=*/1000);
+      config, "time_delay ms", /*tag=*/"speak_detection", /*default=*/2000);
 }
 
 auto timestamp = std::chrono::steady_clock::now();
 
-bool has_speaker(int16_t *signal, size_t size) {
-  double signal_energy = 0;
-  for (size_t i = 0; i < size; i++) 
-    signal_energy += sqrt((double)(signal[i] * signal[i]));
-
-  // Average
-  signal_energy = signal_energy / (double)size;
+bool has_speaker() {
+  double signal_energy = energy / frame_size;
 
   LOG(INFO) << TAG("speak_detection") << AixLog::Color::YELLOW
              << "energy " << energy << " mean energy: " << mean_energy << " threshold "

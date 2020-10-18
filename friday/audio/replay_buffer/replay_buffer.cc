@@ -100,6 +100,8 @@ void update_frame_pointers() {
 
     move_ptr_distance(&fr_bk_pt, 1);
     move_ptr_distance(&fr_fw_pt, 1);
+
+    speak_detection::slide(dropped_sample, buffer[fr_fw_pt]);
   }
 }
 
@@ -219,11 +221,13 @@ int16_t *next_sample() {
     // This moves the frame_pointers to the new audio frame
     update_frame_pointers();
 
-    // We copy the content between our frame_pointers into the return_buffer
-    copy_buffer_to_audio(&fr_bk_pt, &fr_fw_pt, return_buffer);
-
     // We check if the current frame has a speaker in it
-    if (speak_detection::has_speaker(return_buffer, model_frame_size)) {
+    if (speak_detection::has_speaker()) {
+      // std::cout << "Got here" << std::endl;
+
+      // We copy the content between our frame_pointers into the return_buffer
+      copy_buffer_to_audio(&fr_bk_pt, &fr_fw_pt, return_buffer);
+
       return return_buffer;
     }
   }
