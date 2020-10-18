@@ -62,10 +62,10 @@ auto timestamp = std::chrono::steady_clock::now();
 bool has_speaker() {
   double signal_energy = energy / frame_size;
 
-  //LOG(INFO) << TAG("speak_detection") << AixLog::Color::YELLOW
-             //<< "energy " << energy << " mean energy: " << mean_energy << " threshold "
-             //<< mean_energy + deviation_energy << " energy " << signal_energy
-             //<< AixLog::Color::NONE << std::endl;
+  LOG(INFO) << TAG("speak_detection") << AixLog::Color::YELLOW
+             << "energy " << energy << " mean energy: " << mean_energy << " threshold "
+             << mean_energy + deviation_energy << " energy " << signal_energy
+             << AixLog::Color::NONE << std::endl;
 
   // Update the mean energy
   if (signal_energy > mean_energy)
