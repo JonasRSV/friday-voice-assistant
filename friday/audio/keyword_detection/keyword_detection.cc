@@ -104,18 +104,19 @@ std::string prediction() {
     // Blocks until we get a new frame
     int16_t *predict_frame = replay_buffer::next_sample();
 
-    //LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
-               //<< "probabilities: " << pred.probabilities
-               //<< AixLog::Color::NONE << std::endl;
 
     pred = goldfish::predict(predict_frame, frame_size);
     prediction = argmax(pred.probabilities.data());
 
-    //LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
-               //<< "probabilities: " << pred.probabilities
-               //<< AixLog::Color::NONE << std::endl;
+    LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
+               << "probabilities: " << pred.probabilities
+               << AixLog::Color::NONE << std::endl;
 
     if (prediction != 0) {
+      std::cout << "Picked " << std::endl;
+      playback::play_audio_frame(predict_frame, 16000, 8000);
+      usleep(SECONDS(5.0));
+
       float certainty = max(pred.probabilities.data());
 
       LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
