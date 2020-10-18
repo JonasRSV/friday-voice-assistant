@@ -108,7 +108,7 @@ std::string prediction() {
 
 
     pred = goldfish::predict(predict_frame, frame_size);
-    prediction = argmax(pred.probabilities.data());
+    // prediction = argmax(pred.probabilities.data());
 
     //LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
     //           << "probabilities: " << pred.probabilities
