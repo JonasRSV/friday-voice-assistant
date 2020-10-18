@@ -44,14 +44,14 @@ void slide(int16_t dropped_sample, int16_t added_sample) {
 void setup(nlohmann::json config) {
   positive_energy_transfer_rate = config::get_optional_config<double>(
       config, "positive_energy_transfer_rate", /*tag=*/"speak_detection",
-      /*default=*/0.1);
+      /*default=*/0.05);
   negative_energy_transfer_rate = config::get_optional_config<double>(
       config, "negative_energy_transfer_rate", /*tag=*/"speak_detection",
       /*default=*/0.4);
   mean_energy = config::get_optional_config<double>(
       config, "mean_energy", /*tag=*/"speak_detection", /*default=*/2000);
   deviation_energy = config::get_optional_config<double>(
-      config, "deviation_energy", /*tag=*/"speak_detection", /*default=*/30);
+      config, "deviation_energy", /*tag=*/"speak_detection", /*default=*/5);
 
   time_delay = config::get_optional_config<int>(
       config, "time_delay ms", /*tag=*/"speak_detection", /*default=*/1000);

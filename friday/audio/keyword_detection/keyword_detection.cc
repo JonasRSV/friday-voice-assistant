@@ -124,11 +124,15 @@ std::string prediction() {
                  << " certainty: " << certainty << AixLog::Color::NONE
                  << std::endl;
 
+       //std::cout << "Picked " << std::endl;
+       //playback::play_audio_frame(predict_frame, 16000, 8000);
+       //usleep(SECONDS(5.0));
+
       // If we are certain enough we make a prediction
       if (max(pred.probabilities.data()) > certainty_barrier) {
-        // std::cout << "Picked " << std::endl;
-        // playback::play_audio_frame(predict_frame, 16000, 8000);
-        // usleep(SECONDS(5.0));
+         //std::cout << "Picked " << std::endl;
+         //playback::play_audio_frame(predict_frame, 16000, 8000);
+         //usleep(SECONDS(5.0));
 
         return index_to_name[std::to_string(prediction)];
       } else {
