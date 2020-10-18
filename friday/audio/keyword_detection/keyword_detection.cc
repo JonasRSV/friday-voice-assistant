@@ -107,7 +107,9 @@ std::string prediction() {
     std::cout << "Predicting" << std::endl;
 
 
-    pred = goldfish::predict(predict_frame, frame_size);
+    int16_t *frame_copy = (int16_t*)malloc(sizeof(int16_t) * 16000);
+    memcpy(frame_copy, predict_frame, sizeof(int16_t) * 16000);
+    pred = goldfish::predict(frame_copy, frame_size);
     // prediction = argmax(pred.probabilities.data());
 
     //LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
