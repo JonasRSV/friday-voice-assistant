@@ -146,7 +146,7 @@ std::string prediction() {
     }
 
     // Bootstrap fix for raspberry-pi bug
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(4000));
   }
 }
 
