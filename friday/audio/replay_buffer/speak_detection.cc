@@ -49,12 +49,12 @@ void setup(nlohmann::json config) {
       config, "negative_energy_transfer_rate", /*tag=*/"speak_detection",
       /*default=*/0.4);
   mean_energy = config::get_optional_config<double>(
-      config, "mean_energy", /*tag=*/"speak_detection", /*default=*/2000);
+      config, "mean_energy", /*tag=*/"speak_detection", /*default=*/200);
   deviation_energy = config::get_optional_config<double>(
       config, "deviation_energy", /*tag=*/"speak_detection", /*default=*/5);
 
   time_delay = config::get_optional_config<int>(
-      config, "time_delay ms", /*tag=*/"speak_detection", /*default=*/2000);
+      config, "time_delay ms", /*tag=*/"speak_detection", /*default=*/1000);
 }
 
 auto timestamp = std::chrono::steady_clock::now();
@@ -62,10 +62,10 @@ auto timestamp = std::chrono::steady_clock::now();
 bool has_speaker() {
   double signal_energy = energy / frame_size;
 
-  LOG(INFO) << TAG("speak_detection") << AixLog::Color::YELLOW
-             << "energy " << energy << " mean energy: " << mean_energy << " threshold "
-             << mean_energy + deviation_energy << " energy " << signal_energy
-             << AixLog::Color::NONE << std::endl;
+  LOG(INFO) << TAG("speak_detection") << AixLog::Color::YELLOW << "energy "
+            << energy << " mean energy: " << mean_energy << " threshold "
+            << mean_energy + deviation_energy << " energy " << signal_energy
+            << AixLog::Color::NONE << std::endl;
 
   // Update the mean energy
   if (signal_energy > mean_energy)
@@ -77,8 +77,11 @@ bool has_speaker() {
 
   auto current_time = std::chrono::steady_clock::now();
   if (signal_energy > mean_energy + deviation_energy) {
-      // If enough time has passed, e.g don't want to predict on first syllable on utterance
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(current_time - timestamp).count() > time_delay)
+    // If enough time has passed, e.g don't want to predict on first syllable on
+    // utterance
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(current_time -
+                                                              timestamp)
+            .count() > time_delay)
       return true;
 
   } else {

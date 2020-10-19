@@ -105,7 +105,6 @@ std::string prediction() {
     int16_t *predict_frame = replay_buffer::next_sample();
 
     pred = goldfish::predict(predict_frame, frame_size);
-    std::cout << "pred" << std::endl;
     prediction = argmax(pred.probabilities.data());
 
     LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
@@ -146,7 +145,7 @@ std::string prediction() {
     }
 
     // Bootstrap fix for raspberry-pi bug
-    std::this_thread::sleep_for(std::chrono::milliseconds(4000));
+    //std::this_thread::sleep_for(std::chrono::milliseconds(4000));
   }
 }
 
