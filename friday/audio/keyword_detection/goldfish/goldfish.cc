@@ -49,9 +49,14 @@ model_prediction predict(int16_t *audio, size_t size) {
   //LOG(DEBUG) << TAG("goldfish") << AixLog::Color::GREEN
              //<< "Predicting Successful" << AixLog::Color::NONE << std::endl;
 
+  std::vector<float> pred;
+  pred.push_back(0.6);
+  pred.push_back(0.3);
+  pred.push_back(0.1);
+
   return model_prediction{output->get_data<float>()};
 }
 
-size_t prediction_dim() { return output->dims[0]; }
+size_t prediction_dim() { return 3; }
 
 } // namespace goldfish

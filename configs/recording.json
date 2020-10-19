@@ -1,5 +1,5 @@
 {
-  "device": "sysdefault:CARD=Device",
+  "device": "default",
   "sample_rate": 8000,
   "frame_length": 4000
 }
