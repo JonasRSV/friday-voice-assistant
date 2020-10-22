@@ -159,11 +159,16 @@ void setup(nlohmann::json config) {
   fr_bk_pt = 0;
   fr_fw_pt = model_frame_size;
 
-  au_bk_pt = 0;
-  au_fw_pt = audio_frame_size;
+  // Let the audio buffer start a bit ahead
+  au_bk_pt = model_frame_size;
+  au_fw_pt = (model_frame_size + audio_frame_size) % buffer_size;
 
   buffer = (int16_t *)calloc(buffer_size, sizeof(int16_t));
   return_buffer = (int16_t *)calloc(model_frame_size, sizeof(int16_t));
+
+  speak_detection::initialize(buffer,
+                              /*frame_size=*/model_frame_size,
+                              /*sample_rate=*/recording::sample_rate());
 
   // Start new thread for recording audio
   recording_thread = new std::thread(listen);
@@ -206,13 +211,6 @@ int16_t *next_sample() {
     // LOG(DEBUG) << TAG("replay_buffer") << AixLog::Color::YELLOW
     //<< "Got new Frame " << index.fetch_add(1) << AixLog::Color::NONE
     //<< std::endl;
-
-    // Need to initialize speak_detection with first frame
-    if (!speaker_detection_initialized) {
-      // Initialize speaker identification with initial audio
-      speak_detection::initialize(buffer, model_frame_size);
-      speaker_detection_initialized = true;
-    }
 
     has_new_frame = false;
 

@@ -9,74 +9,86 @@ namespace {
 // frame_size of the model
 double frame_size;
 
-// The mean energy is a measure of the average energy.
-double mean_energy;
+// frame_size of the longer speech detection frame
+double long_frame_size;
 
-// How quickly the mean energy is increased.
-double positive_energy_transfer_rate;
+// Sample rate of the recording
+double sample_rate;
 
-// How quickly the mean energy is decreased.
-double negative_energy_transfer_rate;
+// How big the window is (in seconds) for the online calculations
+double long_frame_seconds;
+
+// The mean energy over a longer period
+long long long_energy;
+
+// The mean energy over the prediction frame
+long long energy;
 
 // How far above the energy has to be for the inference to be called
 double deviation_energy;
 
-// Current energy
-double energy = 0;
-
 // ms to wait before predicting after first speaker identification
 int time_delay;
+
+// counter used to determine when to start subtracting from the long frame
+long long long_frame_size_seen = 0;
 } // namespace
 
-void initialize(int16_t *buffer, size_t buffer_size) {
+void initialize(int16_t *buffer, size_t buffer_size, size_t _sample_rate) {
   frame_size = (double)buffer_size;
+  sample_rate = (double)_sample_rate;
 
-  for (size_t i = 0; i < buffer_size; i++) {
-    energy += sqrt((double)buffer[i] * buffer[i]);
-  }
+  long_frame_size = sample_rate * long_frame_seconds;
+
+  long_energy = 0;
+  energy = 0;
 }
 
 void slide(int16_t dropped_sample, int16_t added_sample) {
-  energy -= sqrt((double)(dropped_sample * dropped_sample));
-  energy += sqrt((double)(added_sample * added_sample));
+
+  if (long_frame_size_seen == long_frame_size) 
+    long_energy -= abs(dropped_sample);
+  else
+    long_frame_size_seen += 1;
+
+
+  long_energy += abs(added_sample);
+
+  energy -= abs(dropped_sample);
+  energy += abs(added_sample);
 }
 
 void setup(nlohmann::json config) {
-  positive_energy_transfer_rate = config::get_optional_config<double>(
-      config, "positive_energy_transfer_rate", /*tag=*/"speak_detection",
-      /*default=*/0.05);
-  negative_energy_transfer_rate = config::get_optional_config<double>(
-      config, "negative_energy_transfer_rate", /*tag=*/"speak_detection",
-      /*default=*/0.4);
-  mean_energy = config::get_optional_config<double>(
-      config, "mean_energy", /*tag=*/"speak_detection", /*default=*/200);
+  long_frame_seconds = config::get_optional_config<double>(
+      config, "long_frame_seconds", /*tag=*/"speak_detection",
+      /*default=*/30.0);
+
   deviation_energy = config::get_optional_config<double>(
       config, "deviation_energy", /*tag=*/"speak_detection", /*default=*/5);
 
   time_delay = config::get_optional_config<int>(
-      config, "time_delay ms", /*tag=*/"speak_detection", /*default=*/1000);
+      config, "time_delay ms", /*tag=*/"speak_detection", /*default=*/400);
 }
 
 auto timestamp = std::chrono::steady_clock::now();
 
 bool has_speaker() {
-  double signal_energy = energy / frame_size;
+  double frame_average_energy = (double)energy / frame_size;
+  double long_frame_average_energy = (double)long_energy / long_frame_size_seen;
 
   LOG(INFO) << TAG("speak_detection") << AixLog::Color::YELLOW << "energy "
-            << energy << " mean energy: " << mean_energy << " threshold "
-            << mean_energy + deviation_energy << " energy " << signal_energy
+            << frame_average_energy << " long energy: " << long_frame_average_energy
             << AixLog::Color::NONE << std::endl;
 
-  // Update the mean energy
-  if (signal_energy > mean_energy)
-    mean_energy = mean_energy * (1 - positive_energy_transfer_rate) +
-                  signal_energy * positive_energy_transfer_rate;
-  else
-    mean_energy = mean_energy * (1 - negative_energy_transfer_rate) +
-                  signal_energy * negative_energy_transfer_rate;
-
   auto current_time = std::chrono::steady_clock::now();
-  if (signal_energy > mean_energy + deviation_energy) {
+
+  bool speaker_is_detected = false;
+
+  // If the frame_average_energy is double that of the long_frame_average_energy
+  // it is worth to try to predict, this will work bad for noisy background though
+  speaker_is_detected = speaker_is_detected | (frame_average_energy > long_frame_average_energy * 2);
+
+  if (speaker_is_detected) {
     // If enough time has passed, e.g don't want to predict on first syllable on
     // utterance
     if (std::chrono::duration_cast<std::chrono::milliseconds>(current_time -

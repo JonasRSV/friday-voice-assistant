@@ -12,7 +12,7 @@ std::string config();
 void setup(nlohmann::json);
 
 // Initialize state
-void initialize(int16_t *buffer, size_t buffer_size);
+void initialize(int16_t *buffer, size_t buffer_size, size_t sample_rate);
 
 // Update the state: Added sample is now in the frame and dropped is out.
 // This function is called once per audio sample so it has to be very fast.

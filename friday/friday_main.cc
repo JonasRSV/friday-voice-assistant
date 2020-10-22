@@ -38,9 +38,9 @@ void global_setup(launch::options *opt) {
   local::setup(get_config(opt, local::config()));
   dispatch::setup(get_config(opt, dispatch::config()));
 
-  // First replay then speaker
-  replay_buffer::setup(get_config(opt, replay_buffer::config()));
+  // speaker then replay
   speak_detection::setup(get_config(opt, speak_detection::config()));
+  replay_buffer::setup(get_config(opt, replay_buffer::config()));
 }
 
 void global_cleanup() {

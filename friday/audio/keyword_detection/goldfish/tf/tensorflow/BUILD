@@ -30,8 +30,8 @@ cc_library(
          "lib/linux-x86-64-gpu/libtensorflow_framework.so.1.14.0"
       ],
       ":k8-tf-cpu": [
-         "lib/linux-x86-64-cpu/libtensorflow.so.1", 
-         "lib/linux-x86-64-cpu/libtensorflow_framework.so.1"
+         "lib/linux-x86-64-cpu/libtensorflow.so.2", 
+         "lib/linux-x86-64-cpu/libtensorflow_framework.so.2"
       ],
       ":arm-pi": [
          "lib/raspberryPi32/libtensorflow.so", 
