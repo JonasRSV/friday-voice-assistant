@@ -26,7 +26,7 @@ void dispatch_all(std::string keyword) {
 
 void setup(nlohmann::json config) {
 
-  LOG(INFO) << TAG("dispatch") << AixLog::Color::GREEN << "Setup up success"
+  LOG(INFO) << TAG("dispatch") << AixLog::Color::GREEN << "Setup success"
             << AixLog::Color::NONE << std::endl;
 }
 

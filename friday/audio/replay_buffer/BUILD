@@ -4,6 +4,7 @@ cc_library(
     srcs = ["replay_buffer.cc"],
     hdrs = ["replay_buffer.hpp"],
     deps = [
+        "//friday/audio/keyword_detection/goldfish:goldfish_library",
         "//friday/audio/recording:recording_library",
         "//friday/shared:logging",
         "//friday/shared:json",

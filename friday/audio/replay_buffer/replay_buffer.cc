@@ -1,5 +1,6 @@
 #include "../../shared/aixlog.hpp"
 #include "../../shared/config.hpp"
+#include "../keyword_detection/goldfish/goldfish.hpp"
 #include "../recording/recording.hpp"
 #include "replay_buffer.hpp"
 #include "speak_detection.hpp"
@@ -146,12 +147,11 @@ void add(int16_t *audio, size_t size) {
 }
 
 void setup(nlohmann::json config) {
-  buffer_size = config::get_required_config<size_t>(config, "buffer_size",
-                                                    /*tag=*/"replay_buffer");
-
+  buffer_size = config::get_optional_config<size_t>(config, "buffer_size",
+                                                    /*tag=*/"replay_buffer",
+                                                    /*default=*/100000);
   // Frame size model will get
-  model_frame_size = config::get_required_config<size_t>(
-      config, "frame_size", /*tag=*/"replay_buffer");
+  model_frame_size = goldfish::input_dim();
 
   // Frame size recorded by alsa
   audio_frame_size = recording::frame_size();

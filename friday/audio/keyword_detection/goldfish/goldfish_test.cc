@@ -28,6 +28,8 @@ TEST_CASE("Make prediction", "Goldfish") {
 
   int16_t *audio = get_mock_audio(16000);
 
+  std::cout << " input dim " << goldfish::input_dim() << std::endl;
+
   goldfish::model_prediction pred = goldfish::predict(/*audio=*/audio,
                                                       /*size=*/16000);
 

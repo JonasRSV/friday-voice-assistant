@@ -1,7 +1,7 @@
 #include "../../../shared/aixlog.hpp"
 #include "../../../shared/json.hpp"
-#include "tf/tf.h"
 #include "goldfish.hpp"
+#include "tf/tf.h"
 
 namespace goldfish {
 std::string config() { return "goldfish"; }
@@ -36,22 +36,26 @@ void setup(const nlohmann::json config) {
   LOG(INFO) << TAG("goldfish") << AixLog::Color::GREEN
             << "Loaded model from: " << export_dir << AixLog::Color::NONE
             << std::endl;
+
+  LOG(INFO) << TAG("goldfish") << AixLog::Color::GREEN << "Setup Success"
+            << AixLog::Color::NONE << std::endl;
 }
 model_prediction predict(int16_t *audio, size_t size) {
-  //LOG(DEBUG) << TAG("goldfish") << AixLog::Color::YELLOW
-             //<< "Allocating audio of size: " << size << " on Tensor"
-             //<< AixLog::Color::NONE << std::endl;
+  // LOG(DEBUG) << TAG("goldfish") << AixLog::Color::YELLOW
+  //<< "Allocating audio of size: " << size << " on Tensor"
+  //<< AixLog::Color::NONE << std::endl;
   input->set_data(audio, size);
-  //LOG(DEBUG) << TAG("goldfish") << AixLog::Color::YELLOW << "Predicting"
-             //<< AixLog::Color::NONE << std::endl;
+  // LOG(DEBUG) << TAG("goldfish") << AixLog::Color::YELLOW << "Predicting"
+  //<< AixLog::Color::NONE << std::endl;
   model->run(input, output);
 
-  //LOG(DEBUG) << TAG("goldfish") << AixLog::Color::GREEN
-             //<< "Predicting Successful" << AixLog::Color::NONE << std::endl;
+  // LOG(DEBUG) << TAG("goldfish") << AixLog::Color::GREEN
+  //<< "Predicting Successful" << AixLog::Color::NONE << std::endl;
 
   return model_prediction{output->get_data<float>()};
 }
 
 size_t prediction_dim() { return output->dims[0]; }
+size_t input_dim() { return input->dims[0]; }
 
 } // namespace goldfish

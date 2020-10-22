@@ -18,9 +18,8 @@ nlohmann::json get_config(launch::options *opt, std::string name) {
     return opt->configs[name];
   }
 
-  LOG(DEBUG) << TAG("main") << AixLog::Color::RED << "Config: '" << name
-             << "' not found -- please make sure there is a json file of that "
-                "name in the config directory, otherwise I assume it is empty"
+  LOG(DEBUG) << TAG("main") << AixLog::Color::MAGENTA << "Config: '" << name
+             << "' not found... Proceeding with assumption that its empty"
              << AixLog::Color::NONE << std::endl;
 
   return nlohmann::json();
@@ -41,6 +40,9 @@ void global_setup(launch::options *opt) {
   // speaker then replay
   speak_detection::setup(get_config(opt, speak_detection::config()));
   replay_buffer::setup(get_config(opt, replay_buffer::config()));
+
+  LOG(INFO) << TAG("main") << AixLog::Color::GREEN << "Setup Success"
+            << AixLog::Color::NONE << std::endl;
 }
 
 void global_cleanup() {
@@ -50,6 +52,9 @@ void global_cleanup() {
   playback::free_playback_device();
   launch::free_options();
   philips_hue::free_philips_hue();
+
+  LOG(INFO) << TAG("main") << AixLog::Color::MAGENTA << "Cleanup done.. Bye!"
+            << AixLog::Color::NONE << std::endl;
 }
 
 static volatile bool run = true;

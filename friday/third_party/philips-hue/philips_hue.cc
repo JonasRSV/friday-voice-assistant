@@ -59,7 +59,7 @@ void setup(nlohmann::json config) {
 
   cli = new httplib::Client(ipaddr, port);
 
-  LOG(INFO) << TAG("philips-hue") << AixLog::Color::GREEN << "Success"
+  LOG(INFO) << TAG("philips-hue") << AixLog::Color::GREEN << "Setup Success"
             << AixLog::Color::NONE << std::endl;
 }
 

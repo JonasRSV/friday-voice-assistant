@@ -84,10 +84,13 @@ void setup(nlohmann::json config) {
   snd_pcm_hw_params_get_channels(params, &set_channels);
   snd_pcm_hw_params_get_rate(params, &set_rate, 0);
 
-  LOG(INFO) << TAG("playback") << "PCM name: " << snd_pcm_name(pcm_handle)
-            << " -- PCM state: "
+  LOG(INFO) << TAG("playback") << AixLog::Color::MAGENTA
+            << "PCM name: " << snd_pcm_name(pcm_handle) << " -- PCM state: "
             << snd_pcm_state_name(snd_pcm_state(pcm_handle))
             << " -- Channels: " << set_channels << " -- Rate: " << set_rate
+            << AixLog::Color::NONE << std::endl;
+
+  LOG(INFO) << TAG("playback") << AixLog::Color::GREEN << "Setup Success"
             << AixLog::Color::NONE << std::endl;
 
   playback_buffer = (int16_t *)calloc(buffer_size, sizeof(int16_t));

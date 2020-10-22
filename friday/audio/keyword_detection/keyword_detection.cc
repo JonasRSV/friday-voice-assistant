@@ -83,7 +83,7 @@ void setup(nlohmann::json config) {
   probability_buffer = (float *)calloc(prediction_dim, sizeof(float));
 
   LOG(INFO) << TAG("keyword_detection") << AixLog::Color::GREEN
-            << "Setup keyword detection -- label_map_path: " << label_map_path
+            << "Setup Success -- label_map_path: " << label_map_path
             << " -- certainty_barrier: " << certainty_barrier
             << AixLog::Color::NONE << std::endl;
 }
