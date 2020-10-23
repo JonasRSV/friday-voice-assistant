@@ -4,6 +4,7 @@
 #include "../../shared/print_utils.hpp"
 #include "../playback/playback.hpp"
 #include "../replay_buffer/replay_buffer.hpp"
+#include "../replay_buffer/speak_detection.hpp"
 #include "goldfish/goldfish.hpp"
 #include "keyword_detection.hpp"
 #include <string>
@@ -39,7 +40,6 @@ size_t argmax(float *buffer) {
       largest_probability_index = i;
     }
   }
-
 
   return largest_probability_index;
 }
@@ -108,13 +108,13 @@ std::string prediction() {
     prediction = argmax(pred.probabilities.data());
 
     LOG(DEBUG) << TAG("keyword_detection") << AixLog::Color::YELLOW
-               << "probabilities: " << pred.probabilities
-               << AixLog::Color::NONE << std::endl;
+               << "probabilities: " << pred.probabilities << AixLog::Color::NONE
+               << std::endl;
 
     if (prediction != 0) {
-      //std::cout << "Picked " << std::endl;
-      //playback::play_audio_frame(predict_frame, 16000, 8000);
-      //usleep(SECONDS(5.0));
+      // std::cout << "Picked " << std::endl;
+      // playback::play_audio_frame(predict_frame, 16000, 8000);
+      // usleep(SECONDS(5.0));
 
       float certainty = max(pred.probabilities.data());
 
@@ -124,15 +124,18 @@ std::string prediction() {
                  << " certainty: " << certainty << AixLog::Color::NONE
                  << std::endl;
 
-       //std::cout << "Picked " << std::endl;
-       //playback::play_audio_frame(predict_frame, 16000, 8000);
-       //usleep(SECONDS(5.0));
+      // std::cout << "Picked " << std::endl;
+      // playback::play_audio_frame(predict_frame, 16000, 8000);
+      // usleep(SECONDS(5.0));
 
       // If we are certain enough we make a prediction
       if (max(pred.probabilities.data()) > certainty_barrier) {
-         //std::cout << "Picked " << std::endl;
-         //playback::play_audio_frame(predict_frame, 16000, 8000);
-         //usleep(SECONDS(5.0));
+        // std::cout << "Picked " << std::endl;
+        // playback::play_audio_frame(predict_frame, 16000, 8000);
+        // usleep(SECONDS(5.0));
+
+        // To indicate that a speaker was detected in the current audio frame.
+        speak_detection::was_speaker();
 
         return index_to_name[std::to_string(prediction)];
       } else {
@@ -144,8 +147,11 @@ std::string prediction() {
       }
     }
 
+    // To indicate that no speaker was detected in the current audio frame.
+    speak_detection::was_no_speaker();
+
     // Bootstrap fix for raspberry-pi bug
-    //std::this_thread::sleep_for(std::chrono::milliseconds(4000));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(4000));
   }
 }
 

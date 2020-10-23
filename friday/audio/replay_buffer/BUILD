@@ -29,6 +29,7 @@ cc_library(
     ],
     visibility = [
         "//friday:__pkg__",
+        "//friday/audio/keyword_detection:__pkg__",
     ],
 )
 
