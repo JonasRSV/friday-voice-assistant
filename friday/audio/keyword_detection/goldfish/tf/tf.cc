@@ -170,7 +170,7 @@ Model::Model(const std::string &export_dir) {
                /*proto_len=*/4, /*status=*/status);
 
   this->status_check(true);
-  TF_Buffer *run_opts = NULL; 
+  TF_Buffer *run_opts = NULL;
   const char *tags = "serve";
 
   this->session = TF_LoadSessionFromSavedModel(

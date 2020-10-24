@@ -106,7 +106,7 @@ bool has_speaker() {
   // bad for noisy background though since the voice wont double the energy.
   speaker_is_detected = (frame_average_energy > long_frame_average_energy * 1.2);
 
-  if (speaker_is_detected) {
+  if (true) {
     // If enough time has passed, e.g don't want to predict on first syllable on
     // utterance
     if (std::chrono::duration_cast<std::chrono::milliseconds>(current_time -

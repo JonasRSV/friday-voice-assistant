@@ -1,10 +1,11 @@
 #include "../shared/aixlog.hpp"
-#include "../shared/config.hpp"
+#include "../shared/json_utils.hpp"
 #include "dirent.h"
 #include "setup_configs.hpp"
 
 namespace launch {
 namespace {
+
 bool is_json_file(std::string filename) {
   return filename.substr(filename.find_last_of(".") + 1) == "json";
 }
@@ -49,7 +50,7 @@ load_configs(std::string config_directory) {
       LOG(DEBUG) << AixLog::Tag("launch") << "Loading " << AixLog::Color::GREEN
                  << full_path << AixLog::Color::NONE << std::endl;
 
-      configs[config_name] = config::load_json(full_path, "launch");
+      configs[config_name] = json_utils::load_json(full_path, "launch");
     } else {
       LOG(DEBUG) << AixLog::Tag("launch") << "Ignoring " << AixLog::Color::RED
                  << filename << AixLog::Color::NONE << std::endl;

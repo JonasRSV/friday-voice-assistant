@@ -8,38 +8,31 @@
 #include "dispatch/local.hpp"
 #include "setup/friday_options.hpp"
 #include "shared/aixlog.hpp"
+#include "shared/config.hpp"
 #include "third_party/philips-hue/philips_hue.hpp"
 #include <chrono>
 #include <signal.h>
 #include <stdio.h>
 
-nlohmann::json get_config(launch::options *opt, std::string name) {
-  if (opt->configs.find(name) != opt->configs.end()) {
-    return opt->configs[name];
-  }
-
-  LOG(DEBUG) << TAG("main") << AixLog::Color::MAGENTA << "Config: '" << name
-             << "' not found... Proceeding with assumption that its empty"
-             << AixLog::Color::NONE << std::endl;
-
-  return nlohmann::json();
-}
-
 void global_setup(launch::options *opt) {
   // The order of these setups matter
 
-  goldfish::setup(get_config(opt, goldfish::config()));
-  recording::setup(get_config(opt, recording::config()));
-  playback::setup(get_config(opt, playback::config()));
+  goldfish::setup(config::get_launch_config(opt, goldfish::config(), "main"));
+  recording::setup(config::get_launch_config(opt, recording::config(), "main"));
+  playback::setup(config::get_launch_config(opt, playback::config(), "main"));
 
-  keyword_detection::setup(get_config(opt, keyword_detection::config()));
-  philips_hue::setup(get_config(opt, philips_hue::config()));
-  local::setup(get_config(opt, local::config()));
-  dispatch::setup(get_config(opt, dispatch::config()));
+  keyword_detection::setup(
+      config::get_launch_config(opt, keyword_detection::config(), "main"));
+  philips_hue::setup(
+      config::get_launch_config(opt, philips_hue::config(), "main"));
+  local::setup(config::get_launch_config(opt, local::config(), "main"));
+  dispatch::setup(config::get_launch_config(opt, dispatch::config(), "main"));
 
   // speaker then replay
-  speak_detection::setup(get_config(opt, speak_detection::config()));
-  replay_buffer::setup(get_config(opt, replay_buffer::config()));
+  speak_detection::setup(
+      config::get_launch_config(opt, speak_detection::config(), "main"));
+  replay_buffer::setup(
+      config::get_launch_config(opt, replay_buffer::config(), "main"));
 
   LOG(INFO) << TAG("main") << AixLog::Color::GREEN << "Setup Success"
             << AixLog::Color::NONE << std::endl;

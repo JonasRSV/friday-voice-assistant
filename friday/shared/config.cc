@@ -1,20 +1,20 @@
+#include "../setup/friday_options.hpp"
 #include "aixlog.hpp"
 #include "json.hpp"
 
 namespace config {
-nlohmann::json load_json(std::string json_path, std::string tag) {
-  std::ifstream i(json_path);
-  if (!i.good()) {
-    LOG(FATAL) << TAG(tag) << AixLog::Color::RED << "Failed to load "
-               << json_path << AixLog::Color::NONE << std::endl;
-    exit(1);
+
+nlohmann::json get_launch_config(launch::options *opt, std::string name,
+                                 std::string tag) {
+  if (opt->configs.find(name) != opt->configs.end()) {
+    return opt->configs[name];
   }
-  nlohmann::json config;
 
-  // Reads json file
-  i >> config;
+  LOG(DEBUG) << TAG(tag) << AixLog::Color::MAGENTA << "Config: '" << name
+             << "' not found... Proceeding with assumption that its empty"
+             << AixLog::Color::NONE << std::endl;
 
-  return config;
+  return nlohmann::json();
 }
 
-}
+} // namespace config

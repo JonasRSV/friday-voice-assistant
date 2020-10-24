@@ -1,6 +1,7 @@
 #include "../../shared/aixlog.hpp"
 #include "../../shared/config.hpp"
 #include "../../shared/json.hpp"
+#include "../../shared/json_utils.hpp"
 #include "../../shared/print_utils.hpp"
 #include "../playback/playback.hpp"
 #include "../replay_buffer/replay_buffer.hpp"
@@ -68,7 +69,7 @@ void setup(nlohmann::json config) {
       config, "label_map_path", /*tag=*/"keyword_detection");
 
   nlohmann::json name_to_index =
-      config::load_json(label_map_path, /*tag=*/"keyword_detection");
+      json_utils::load_json(label_map_path, /*tag=*/"keyword_detection");
 
   // Reverse label map to use as lookup in predictions
   for (auto it = name_to_index.begin(); it != name_to_index.end(); it++)
@@ -124,8 +125,8 @@ std::string prediction() {
                  << " certainty: " << certainty << AixLog::Color::NONE
                  << std::endl;
 
-       //playback::play_audio_frame(predict_frame, 16000, 8000);
-       //usleep(SECONDS(5.0));
+      // playback::play_audio_frame(predict_frame, 16000, 8000);
+      // usleep(SECONDS(5.0));
 
       // If we are certain enough we make a prediction
       if (max(pred.probabilities.data()) > certainty_barrier) {
