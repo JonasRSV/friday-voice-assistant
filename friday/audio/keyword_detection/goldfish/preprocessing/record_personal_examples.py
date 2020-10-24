@@ -1,18 +1,17 @@
 import friday.audio.keyword_detection.goldfish.shared.goldfish_utils as utils
 import random
+import alsaaudio
 import tensorflow as tf
 import argparse
 import pathlib
 import numpy as np
 import matplotlib.pyplot as plt
-import sounddevice
 import simpleaudio
 
 tf.compat.v1.enable_eager_execution()
 
 
-
-def record_audio(file_prefix: str, clip_length: float, sample_rate: int, text: str):
+def record_audio(file_prefix: str, clip_length: float, sample_rate: int, device: str, text: str):
     suffix = random.randint(0, 10000000)
     file_name = f"{file_prefix}.personal.{suffix}"
     while pathlib.Path(file_name).is_file():
@@ -24,14 +23,33 @@ def record_audio(file_prefix: str, clip_length: float, sample_rate: int, text: s
     print(f"Welcome to data recorder, to stop press <C-c> at anytime and your files will be saved")
     print(f"you have provided: {text} -- all recordings well be assumed to contain this")
 
+    # recording.pause(False)
     try:
         while True:
             input(f"Press enter to start recording -- will record for {clip_length} seconds")
-            audio_data = sounddevice.rec(frames=int(sample_rate * clip_length), samplerate=sample_rate, channels=1,
-                                         dtype="int16")
 
-            # Wait for recording to be done
-            sounddevice.wait()
+            recording = alsaaudio.PCM(type=alsaaudio.PCM_CAPTURE,
+                                      mode=alsaaudio.PCM_NORMAL,
+                                      rate=sample_rate,
+                                      channels=1,
+                                      periodsize=int(sample_rate * clip_length),
+                                      device=device)
+
+            recording.setperiodsize(int(sample_rate * clip_length))
+
+            audio_frames = []
+            total_length = 0
+            while total_length < int(sample_rate * clip_length):
+                length, data = recording.read()
+
+                audio_frames.append(data)
+                total_length += length
+
+            recording.close()
+            audio_data = b''.join(audio_frames)
+
+            audio_data = np.fromstring(audio_data, dtype="int16")
+            audio_data = audio_data[:int(sample_rate * clip_length)]
 
             example = utils.create_example(
                 text=text,
@@ -48,7 +66,7 @@ def record_audio(file_prefix: str, clip_length: float, sample_rate: int, text: s
     datawriter.close()
 
 
-def record_background(file_prefix: str, clip_length: float, sample_rate: int):
+def record_background(file_prefix: str, clip_length: float, sample_rate: int, device: str):
     suffix = random.randint(0, 10000000)
     file_name = f"{file_prefix}.personal.{suffix}"
     while pathlib.Path(file_name).is_file():
@@ -60,11 +78,28 @@ def record_background(file_prefix: str, clip_length: float, sample_rate: int):
     print(f"Welcome to data recorder, to stop press <C-c> at anytime and your files will be saved")
     try:
         while True:
-            audio_data = sounddevice.rec(frames=int(sample_rate * clip_length), samplerate=sample_rate, channels=1,
-                                         dtype="int16")
+            recording = alsaaudio.PCM(type=alsaaudio.PCM_CAPTURE,
+                                      mode=alsaaudio.PCM_NORMAL,
+                                      rate=sample_rate,
+                                      channels=1,
+                                      periodsize=int(sample_rate * clip_length),
+                                      device=device)
 
-            # Wait for recording to be done
-            sounddevice.wait()
+            recording.setperiodsize(int(sample_rate * clip_length))
+
+            audio_frames = []
+            total_length = 0
+            while total_length < int(sample_rate * clip_length):
+                length, data = recording.read()
+
+                audio_frames.append(data)
+                total_length += length
+
+            recording.close()
+            audio_data = b''.join(audio_frames)
+
+            audio_data = np.fromstring(audio_data, dtype="int16")
+            audio_data = audio_data[:int(sample_rate * clip_length)]
 
             example = utils.create_example(
                 text="[UNK]",
@@ -110,15 +145,14 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.device:
-        sounddevice.default.device = args.device
-
     if args.background:
         record_background(file_prefix=args.file_prefix,
                           clip_length=args.clip_length,
-                          sample_rate=args.sample_rate)
+                          sample_rate=args.sample_rate,
+                          device=args.device)
     else:
         record_audio(file_prefix=args.file_prefix,
                      clip_length=args.clip_length,
                      sample_rate=args.sample_rate,
+                     device=args.device,
                      text=args.text)

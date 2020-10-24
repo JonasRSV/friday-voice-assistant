@@ -135,22 +135,33 @@ Once you're done, do one keyboard interrupt and it will save your recordings int
 ```bash
 TEXT="godmorgon"
 
+# use arecord -L to list devices
+
+DEVICE="default"
+
+
 bazel run //friday/audio/keyword_detection/goldfish/preprocessing:record_personal_examples --\
     --file_prefix=${GOLDFISH_DIRECTORY?}/tfexamples\
     --sample_rate=8000\
     --clip_length=2.0\
-    --text=${TEXT?}
+    --text=${TEXT?}\
+    --device=${DEVICE?}
 
 ```
 
 Recording background noise
 ```bash
+
+# use arecord -L to list devices
+DEVICE="default"
+
 bazel run //friday/audio/keyword_detection/goldfish/preprocessing:record_personal_examples --\
     --file_prefix=${GOLDFISH_DIRECTORY?}/tfexamples\
     --sample_rate=8000\
     --clip_length=2.0\
     --text=""\
-    --background="[UNK]"
+    --background="[UNK]"\
+    --device=${DEVICE?}
 ```
 
 ### Manually filtering a record
