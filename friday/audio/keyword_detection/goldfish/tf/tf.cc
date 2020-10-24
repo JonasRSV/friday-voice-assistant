@@ -165,9 +165,9 @@ Model::Model(const std::string &export_dir) {
   TF_SessionOptions *sess_opts = TF_NewSessionOptions();
 
   // This magic hex string limits tensorflow to using 1-thread
-  // to reduce resource usage.
-  //TF_SetConfig(/*options=*/sess_opts, /*proto=*/"\x10\x01(\x01",
-  //             /*proto_len=*/4, /*status=*/status);
+  // If you want to let tf use all the resources it can, uncomment this
+  TF_SetConfig(/*options=*/sess_opts, /*proto=*/"\x10\x01(\x01",
+               /*proto_len=*/4, /*status=*/status);
 
   this->status_check(true);
   TF_Buffer *run_opts = NULL; 
