@@ -21,7 +21,7 @@ bazel run //friday/audio/keyword_detection/goldfish/models/magikarp:magikarp --\
     --clip_length=2.0\
     --batch_size=32\
     --start_learning_rate=0.001\
-    --learning_rate_decay=0.92\
+    --learning_rate_decay=0.90\
     --learning_decay_steps=500\
     --num_labels=10\
     --max_steps=1000000\
