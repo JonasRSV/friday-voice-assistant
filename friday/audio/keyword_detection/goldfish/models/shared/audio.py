@@ -12,7 +12,7 @@ def mfcc_feature(signal: tf.Tensor, coefficients: int,
                  sample_rate=44100,
                  lower_edge_hertz=80.0,
                  upper_edge_hertz=7600.0,
-                 num_mel_bins=80):
+                 num_mel_bins=40):
     """Computes 'coefficient' MFCC coefficient from the audio signal
 
     Args:

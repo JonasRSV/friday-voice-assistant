@@ -56,7 +56,8 @@ def create_input_fn(mode: tf.estimator.ModeKeys,
     return input_fn
 
 
-def raw_audio_model(signal: tf.Tensor, num_labels: int, mode: tf.estimator.ModeKeys) -> tf.Tensor:
+def raw_audio_model(signal: tf.Tensor, num_labels: int,
+                    mode: tf.estimator.ModeKeys) -> tf.Tensor:
     """A convolution based model.
 
     Args:
@@ -78,52 +79,82 @@ def raw_audio_model(signal: tf.Tensor, num_labels: int, mode: tf.estimator.ModeK
                                    activation=tf.nn.relu)(x)
     x = tf.compat.v1.layers.MaxPooling1D(15, strides=10)(x)
     x = tf.compat.v1.layers.Flatten()(x)
-    x = tf.compat.v1.layers.Dropout(rate=0.25)(x, training=mode == tf.estimator.ModeKeys.TRAIN)
+    x = tf.compat.v1.layers.Dropout(rate=0.25)(
+        x, training=mode == tf.estimator.ModeKeys.TRAIN)
     x = tf.compat.v1.layers.Dense(64, activation=tf.nn.relu)(x)
     x = tf.compat.v1.layers.Dense(num_labels, activation=None)(x)
 
     return x
 
 
-def mfcc_model(x: tf.Tensor, num_labels: int, mode: tf.estimator.ModeKeys) -> tf.Tensor:
+def mfcc_model(x: tf.Tensor, num_labels: int,
+               mode: tf.estimator.ModeKeys,
+               regularization: float = 1e-6) -> tf.Tensor:
     x = tf.expand_dims(x, -1)
-
-    x = tf.compat.v1.layers.Conv2D(filters=64, kernel_size=(7, 3), activation=tf.nn.relu)(x)
-
+    x = tf.compat.v1.layers.Conv2D(
+        filters=64,
+        kernel_size=(7, 3),
+        activation=tf.nn.relu,
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(regularization))(x)
     x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 3), strides=(1, 1))(x)
-    x = tf.compat.v1.layers.Conv2D(filters=128, kernel_size=(1, 7), activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Conv2D(
+        filters=128,
+        kernel_size=(1, 7),
+        activation=tf.nn.relu,
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(regularization))(x)
     x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 4), strides=(1, 1))(x)
-    x = tf.compat.v1.layers.Conv2D(filters=256, kernel_size=(1, 10), padding="valid", activation=tf.nn.relu)(x)
-    x = tf.compat.v1.layers.Conv2D(filters=512, kernel_size=(7, 1), activation=tf.nn.relu)(x)
+    x = tf.compat.v1.layers.Conv2D(
+        filters=256,
+        kernel_size=(1, 10),
+        padding="valid",
+        activation=tf.nn.relu,
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(regularization))(x)
+    x = tf.compat.v1.layers.Conv2D(
+        filters=512,
+        kernel_size=(7, 1),
+        activation=tf.nn.relu,
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(regularization))(x)
     x = tf.keras.layers.GlobalMaxPooling2D()(x)
 
-    x = tf.compat.v1.layers.Dropout(rate=0.4)(x, training=mode == tf.estimator.ModeKeys.TRAIN)
-    x = tf.compat.v1.layers.Dense(256, activation=tf.nn.relu)(x)
-    logits = tf.compat.v1.layers.Dense(num_labels, activation=None)(x)
+    x = tf.compat.v1.layers.Dropout(rate=0.50)(
+        x, training=mode == tf.estimator.ModeKeys.TRAIN)
+    x = tf.compat.v1.layers.Dense(
+        256,
+        activation=tf.nn.relu,
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(regularization))(x)
+    logits = tf.compat.v1.layers.Dense(
+        num_labels,
+        activation=None,
+        kernel_regularizer=tf.contrib.layers.l2_regularizer(regularization))(x)
     return logits
 
 
-def get_metric_ops(labels: tf.Tensor, predicted_class: tf.Tensor, num_labels: int):
+def get_metric_ops(labels: tf.Tensor, predicted_class: tf.Tensor,
+                   num_labels: int):
     metric_ops = {}
 
     def weights_label(label: int):
         return tf.cast(tf.equal(labels, label), tf.float32)
 
     for label in range(num_labels):
-        metric_ops[f"{label}_accuracy"] = tf.metrics.accuracy(labels=labels,
-                                                              predictions=predicted_class,
-                                                              weights=weights_label(label))
+        metric_ops[f"{label}_accuracy"] = tf.metrics.accuracy(
+            labels=labels,
+            predictions=predicted_class,
+            weights=weights_label(label))
         bools_label = tf.equal(labels, label)
         bools_pred = tf.equal(predicted_class, label)
 
-        metric_ops[f"{label}_recall"] = tf.metrics.recall(labels=bools_label,
-                                                          predictions=bools_pred,
-                                                          weights=weights_label(label))
-        metric_ops[f"{label}_precision"] = tf.metrics.precision(labels=bools_label,
-                                                                predictions=bools_pred,
-                                                                weights=weights_label(label))
+        metric_ops[f"{label}_recall"] = tf.metrics.recall(
+            labels=bools_label,
+            predictions=bools_pred,
+            weights=weights_label(label))
+        metric_ops[f"{label}_precision"] = tf.metrics.precision(
+            labels=bools_label,
+            predictions=bools_pred,
+            weights=weights_label(label))
 
-    metric_ops["global_accuracy"] = tf.metrics.accuracy(labels=labels, predictions=predicted_class)
+    metric_ops["global_accuracy"] = tf.metrics.accuracy(
+        labels=labels, predictions=predicted_class)
     return metric_ops
 
 
@@ -149,19 +180,17 @@ def make_model_fn(summary_output_dir: str,
                              tensor=signal,
                              sample_rate=sample_rate)
 
-        signal = audio.mfcc_feature(
-           signal=signal,
-           coefficients=27,
-           sample_rate=sample_rate,
-           frame_length=1024,
-           frame_step=512,
-           fft_length=1024,
-           num_mel_bins=80,
-           lower_edge_hertz=128,
-           upper_edge_hertz=3800
-        )
+        signal = audio.mfcc_feature(signal=signal,
+                                    coefficients=13,
+                                    sample_rate=sample_rate,
+                                    frame_length=512,
+                                    frame_step=256,
+                                    fft_length=512,
+                                    num_mel_bins=40,
+                                    lower_edge_hertz=128,
+                                    upper_edge_hertz=4000)
 
-        #logits = raw_audio_model(signal=signal, num_labels=num_labels, mode=mode)
+        # logits = raw_audio_model(signal=signal, num_labels=num_labels, mode=mode)
 
         logits = mfcc_model(x=signal, num_labels=num_labels, mode=mode)
         predict_op = tf.nn.softmax(logits)
@@ -170,28 +199,31 @@ def make_model_fn(summary_output_dir: str,
         if mode != tf.estimator.ModeKeys.PREDICT:
             labels = features["label"]
 
-            #weights = tf.gather(params=[5.0, 1.0, 1.0], indices=labels)
-
             loss_op = tf.identity(tf.losses.sparse_softmax_cross_entropy(
                 labels=labels, logits=logits),
-                #weights=weights),
-                name="loss_op")
+                                  name="loss_op")
 
             exp_learning_rate = tf.compat.v1.train.exponential_decay(
                 learning_rate=learning_rate,
                 global_step=tf.compat.v1.train.get_global_step(),
                 decay_steps=decay_steps,
                 decay_rate=decay_rate,
-                staircase=True
-            )
+                staircase=True)
 
             # Add to summary
-            tf.summary.scalar("learning rate", exp_learning_rate)
+            tf.summary.scalar("learning_rate", exp_learning_rate)
+
+            # Add regularization
+            reg_loss = tf.compat.v1.losses.get_regularization_loss()
+            tf.summary.scalar("regularization_loss", reg_loss)
+
+            total_loss = reg_loss + loss_op
+            tf.summary.scalar("total_loss", total_loss)
 
             train_op = tf.compat.v1.train.AdamOptimizer(
                 learning_rate=exp_learning_rate).minimize(
-                loss=loss_op,
-                global_step=tf.compat.v1.train.get_global_step())
+                    loss=total_loss,
+                    global_step=tf.compat.v1.train.get_global_step())
 
             train_logging_hooks = [
                 tf.estimator.LoggingTensorHook({"loss": "loss_op"},
@@ -296,7 +328,7 @@ def main():
     config = tf.estimator.RunConfig(
         model_dir=args.model_directory,
         save_summary_steps=args.save_summary_every,
-            log_step_count_steps=100,
+        log_step_count_steps=100,
         save_checkpoints_steps=args.eval_every,
     )
 
@@ -308,26 +340,24 @@ def main():
         learning_rate=args.start_learning_rate,
         decay_rate=args.learning_rate_decay,
         decay_steps=args.learning_decay_steps),
-        model_dir=args.model_directory,
-        config=config)
+                                       model_dir=args.model_directory,
+                                       config=config)
 
     if args.mode == Mode.train_eval.value:
         train_spec = tf.estimator.TrainSpec(
-            input_fn=create_input_fn(
-                mode=tf.estimator.ModeKeys.TRAIN,
-                input_prefix=args.train_prefix,
-                parallel_reads=args.parallel_reads,
-                batch_size=args.batch_size),
+            input_fn=create_input_fn(mode=tf.estimator.ModeKeys.TRAIN,
+                                     input_prefix=args.train_prefix,
+                                     parallel_reads=args.parallel_reads,
+                                     batch_size=args.batch_size),
             max_steps=args.max_steps,
         )
 
         eval_spec = tf.estimator.EvalSpec(
             steps=args.eval_every,
-            input_fn=create_input_fn(
-                mode=tf.estimator.ModeKeys.EVAL,
-                input_prefix=args.eval_prefix,
-                parallel_reads=args.parallel_reads,
-                batch_size=args.batch_size),
+            input_fn=create_input_fn(mode=tf.estimator.ModeKeys.EVAL,
+                                     input_prefix=args.eval_prefix,
+                                     parallel_reads=args.parallel_reads,
+                                     batch_size=args.batch_size),
             throttle_secs=5,
         )
 
@@ -338,9 +368,9 @@ def main():
         def serving_input_receiver_fn():
             inputs = {
                 "audio":
-                    tf.compat.v1.placeholder(dtype=tf.int16,
-                                             shape=[AUDIO_SHAPE],
-                                             name="input")
+                tf.compat.v1.placeholder(dtype=tf.int16,
+                                         shape=[AUDIO_SHAPE],
+                                         name="input")
             }
             return tf.estimator.export.ServingInputReceiver(
                 features=inputs, receiver_tensors=inputs)
