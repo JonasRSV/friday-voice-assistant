@@ -39,7 +39,7 @@ def record_audio(file_prefix: str, clip_length: float, sample_rate: int, device:
 
             audio_frames = []
             total_length = 0
-            while total_length < int(sample_rate * clip_length):
+            while total_length < int(sample_rate * (clip_length + 0.5)):
                 length, data = recording.read()
 
                 audio_frames.append(data)
@@ -49,7 +49,7 @@ def record_audio(file_prefix: str, clip_length: float, sample_rate: int, device:
             audio_data = b''.join(audio_frames)
 
             audio_data = np.fromstring(audio_data, dtype="int16")
-            audio_data = audio_data[:int(sample_rate * clip_length)]
+            audio_data = audio_data[int(sample_rate * 0.5):int(sample_rate * (clip_length + 0.5))]
 
             example = utils.create_example(
                 text=text,
@@ -89,7 +89,8 @@ def record_background(file_prefix: str, clip_length: float, sample_rate: int, de
 
             audio_frames = []
             total_length = 0
-            while total_length < int(sample_rate * clip_length):
+            # Add 0.5 seconds of recording to avoid annoying clip sound for some mics when they turn on
+            while total_length < int(sample_rate * (clip_length + 0.5)):
                 length, data = recording.read()
 
                 audio_frames.append(data)
@@ -99,7 +100,8 @@ def record_background(file_prefix: str, clip_length: float, sample_rate: int, de
             audio_data = b''.join(audio_frames)
 
             audio_data = np.fromstring(audio_data, dtype="int16")
-            audio_data = audio_data[:int(sample_rate * clip_length)]
+            # drop first 0.5 seconds
+            audio_data = audio_data[int(sample_rate * 0.5):int(sample_rate * (clip_length + 0.5))]
 
             example = utils.create_example(
                 text="[UNK]",
