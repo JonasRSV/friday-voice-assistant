@@ -90,22 +90,24 @@ def raw_audio_model(signal: tf.Tensor, num_labels: int,
 def mfcc_model(x: tf.Tensor, num_labels: int,
                mode: tf.estimator.ModeKeys,
                regularization: float = 1e-6) -> tf.Tensor:
+
     x = tf.expand_dims(x, -1)
+
     x = tf.compat.v1.layers.Conv2D(
         filters=64,
-        kernel_size=(7, 3),
+        kernel_size=(5, 2),
         activation=tf.nn.relu,
         kernel_regularizer=tf.contrib.layers.l2_regularizer(regularization))(x)
-    x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 3), strides=(1, 1))(x)
+    x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 2), strides=(1, 1))(x)
     x = tf.compat.v1.layers.Conv2D(
         filters=128,
-        kernel_size=(1, 7),
+        kernel_size=(1, 5),
         activation=tf.nn.relu,
         kernel_regularizer=tf.contrib.layers.l2_regularizer(regularization))(x)
-    x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 4), strides=(1, 1))(x)
+    x = tf.compat.v1.layers.MaxPooling2D(pool_size=(1, 2), strides=(1, 1))(x)
     x = tf.compat.v1.layers.Conv2D(
         filters=256,
-        kernel_size=(1, 10),
+        kernel_size=(1, 2),
         padding="valid",
         activation=tf.nn.relu,
         kernel_regularizer=tf.contrib.layers.l2_regularizer(regularization))(x)
