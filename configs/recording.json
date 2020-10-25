@@ -1,5 +1,5 @@
 {
   "device": "sysdefault:CARD=Camera",
   "sample_rate": 8000,
-  "frame_length": 16000
+  "frame_length": 4000
 }
