@@ -50,6 +50,9 @@ TEST_CASE("Run Main Friday simulation and store file", "friday") {
   // Record audio, as if we were the keyword_detection
   while (recorded_audio < audio_buffer_size) {
     int16_t *sample = replay_buffer::next_sample();
+
+    goldfish::predict(sample, 16000);
+
     LOG(INFO) << TAG("debug_friday_audio_test") << AixLog::Color::GREEN
               << "Got a new sample" << AixLog::Color::NONE << std::endl;
 
