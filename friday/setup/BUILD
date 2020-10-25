@@ -11,6 +11,7 @@ cc_library(
     ],
     visibility = [
         "//friday:__pkg__",
+        "//friday/shared:__pkg__",
     ],
 )
 
@@ -21,7 +22,7 @@ cc_library(
     deps = [
         "//friday/shared:logging",
         "//friday/shared:json",
-        "//friday/shared:config_library",
+        "//friday/shared:json_utils_library",
     ],
     visibility = [
         "//friday:__pkg__",

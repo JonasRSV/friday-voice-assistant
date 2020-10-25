@@ -16,12 +16,26 @@ cc_library(
 )
 
 cc_library(
+    name = "json_utils_library",
+    srcs = ["json_utils.cc"],
+    hdrs = ["json_utils.hpp"],
+    deps = [
+        "//friday/shared:json",
+        "//friday/shared:logging",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+)
+
+cc_library(
     name = "config_library",
     srcs = ["config.cc"],
     hdrs = ["config.hpp"],
     deps = [
         "//friday/shared:json",
         "//friday/shared:logging",
+        "//friday/setup:friday_options_library",
     ],
     visibility = [
         "//visibility:public",

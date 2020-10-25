@@ -163,6 +163,13 @@ Model::Model(const std::string &export_dir) {
 
   // Create the session.
   TF_SessionOptions *sess_opts = TF_NewSessionOptions();
+
+  // This magic hex string limits tensorflow to using 1-thread
+  // If you want to let tf use all the resources it can, uncomment this
+  TF_SetConfig(/*options=*/sess_opts, /*proto=*/"\x10\x01(\x01",
+               /*proto_len=*/4, /*status=*/status);
+
+  this->status_check(true);
   TF_Buffer *run_opts = NULL;
   const char *tags = "serve";
 
@@ -229,9 +236,10 @@ void Model::run(Tensor *input, Tensor *output) {
 
   TF_Tensor *output_value;
 
+  TF_Buffer *run_opts = NULL;
   TF_SessionRun(
       /*session=*/this->session,
-      /*run_options=*/nullptr,
+      /*run_options=*/run_opts,
       /*inputs=*/&input_op,
       /*input_values=*/&input_value,
       /*num_inputs=*/1,

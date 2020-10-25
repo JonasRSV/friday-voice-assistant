@@ -1,3 +1,6 @@
+#ifndef CONFIG_HPP_7TLC6LUC
+#define CONFIG_HPP_7TLC6LUC
+#include "../setup/friday_options.hpp"
 #include "aixlog.hpp"
 #include "json.hpp"
 #include <string>
@@ -30,6 +33,8 @@ T get_optional_config(nlohmann::json config, std::string name, std::string tag,
   return default_;
 }
 
-nlohmann::json load_json(std::string json_path, std::string tag);
+nlohmann::json get_launch_config(launch::options *opt, std::string name,
+                                 std::string tag);
 
 } // namespace config
+#endif /* end of include guard: CONFIG_HPP_7TLC6LUC */

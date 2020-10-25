@@ -11,6 +11,7 @@ cc_library(
         "//friday/shared:print_utils",
         "//friday/shared:json",
         "//friday/shared:config_library",
+        "//friday/shared:json_utils_library",
     ],
     visibility = [
         "//friday:__pkg__",
