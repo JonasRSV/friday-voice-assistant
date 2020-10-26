@@ -51,9 +51,8 @@ This project also depends on tensorflowlib, there is an [issue](https://github.c
 
 ### Features
 
-- [philips-hue](https://github.com/JonasRSV/friday-voice-assistant/blob/master/friday/third_party/philips-hue/README.md)
-
-Currently you can only use this to control philips hue lights. I personally use it installed on a raspberry-pi to control my lights at home. 
+- [philips-hue | Control Lights](https://github.com/JonasRSV/friday-voice-assistant/blob/master/friday/third_party/philips-hue/README.md) 
+- [Launch | Launch Programs](https://github.com/JonasRSV/friday-voice-assistant/blob/master/friday/dispatch/README.md)
 
 I intend to add many more features in the future. You can take a look in [friday/third_party](friday/third_party) how philips hue is implemented if you want to contribute something yourself! :) 
 
