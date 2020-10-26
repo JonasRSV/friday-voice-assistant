@@ -3,6 +3,10 @@
 - [Developing](#developing)
     - [Dependencies](#dependencies)
 - [Setup](#setup)
+  - [x86-linux-CPU](#x86-linux-cpu)
+  - [x86-linux-GPU](#x86-linux-gpu)
+  - [Raspberry pi](#raspberry-pi)
+  - [Rock64](#rock64)
 - [Testing](#testing)
 
 Goldfish is the keyword spotting model used by friday. For instructions on training your own see [preprocessing](docs/preprocessing.md) 
