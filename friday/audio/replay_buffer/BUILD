@@ -13,6 +13,7 @@ cc_library(
     ],
     visibility = [
         "//friday:__pkg__",
+        "//friday/debug:__pkg__",
         "//friday/audio/keyword_detection:__pkg__",
     ],
     linkopts =["-pthread"]
@@ -29,6 +30,7 @@ cc_library(
     ],
     visibility = [
         "//friday:__pkg__",
+        "//friday/debug:__pkg__",
         "//friday/audio/keyword_detection:__pkg__",
     ],
 )

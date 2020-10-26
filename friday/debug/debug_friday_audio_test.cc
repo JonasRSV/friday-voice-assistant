@@ -1,11 +1,11 @@
-#include "audio/keyword_detection/goldfish/goldfish.hpp"
-#include "audio/recording/recording.hpp"
-#include "audio/replay_buffer/replay_buffer.hpp"
-#include "audio/replay_buffer/speak_detection.hpp"
+#include "../audio/keyword_detection/goldfish/goldfish.hpp"
+#include "../audio/recording/recording.hpp"
+#include "../audio/replay_buffer/replay_buffer.hpp"
+#include "../audio/replay_buffer/speak_detection.hpp"
+#include "../setup/friday_options.hpp"
+#include "../shared/config.hpp"
+#include "../testing/catch.hpp"
 #include "iostream"
-#include "setup/friday_options.hpp"
-#include "shared/config.hpp"
-#include "testing/catch.hpp"
 
 template <typename T>
 void write_binary(T data, int bytes, std::ofstream &stream) {

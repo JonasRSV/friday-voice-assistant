@@ -13,5 +13,6 @@ cc_library(
         "//friday:__pkg__",
         "//friday/audio/replay_buffer:__pkg__",
         "//friday/audio/playback:__pkg__",
+        "//friday/debug:__pkg__",
     ],
 )
