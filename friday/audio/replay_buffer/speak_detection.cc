@@ -16,7 +16,7 @@ double long_frame_size;
 // Sample rate of the recording
 double sample_rate;
 
-// How big the window is (in seconds) for the online calculations
+// How big the window is (in seconds) of the long frame
 double long_frame_seconds;
 
 // The mean energy over a longer period
