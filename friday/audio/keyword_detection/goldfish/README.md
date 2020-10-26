@@ -10,6 +10,8 @@ and [model_magikarp](docs/model_magikarp.md).
 
 ## Developing 
 
+---
+
 ### Dependencies
 Bazel does not work that great with python yet, I recommend starting a virtual env in the goldfish directory
 
@@ -25,7 +27,9 @@ python3 -m pip3 install -r requirements.txt
 
 Hopefully the commands in the other docs should work as expected now.
 
-### Setup for usage with friday
+## Setup for usage with friday
+
+---
 
 #### x86-linux-CPU
 
