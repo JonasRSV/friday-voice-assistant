@@ -263,7 +263,7 @@ void Model::run(Tensor *input, Tensor *output) {
 
 bool Model::status_check(bool throw_exc) const {
 
-  if (TF_GetCode(this->status) != TF_OK) {
+  if (TF_GetCode(this->status) != TF_Code_TF_OK) {
     if (throw_exc) {
       throw std::runtime_error(TF_Message(status));
     } else {

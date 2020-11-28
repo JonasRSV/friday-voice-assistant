@@ -1,3 +1,6 @@
+# This project is no longer under development See: https://github.com/JonasRSV/Friday Instead
+
+
 # Friday voice assistant 
 
 
